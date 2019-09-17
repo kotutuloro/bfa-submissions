@@ -3,12 +3,9 @@ import os
 import discord
 from discord.ext import commands
 
-description = '''my guy
-
-i actually do not know yet lol
-'''
-
+description = 'A bot to help with weekly score submissions'
 bot = commands.Bot(command_prefix='!', description=description)
+
 token = os.getenv('DISCORD_BOT_TOKEN')
 submission_channel_id = int(os.getenv('SUBMISSION_CHANNEL_ID'))
 
@@ -24,26 +21,45 @@ async def correct_channel(ctx):
     submission_channel = bot.get_channel(submission_channel_id)
     return ctx.channel == submission_channel
 
-@bot.command(help="i do submission things")
+@bot.command()
 async def submit(ctx, score: int):
+    """Submit a score **with picture** for the BFA Weekly Challenge
+
+    This command requires a photo attachment to be part of the message.
+
+    <score> -- Your ex or money score (depending on the challenge) [digits only, no commas]
+    """
+
     print(f'rcvd cmd: {ctx.message}')
     pic_url = validate_attachment(ctx.message)
-    await ctx.send(f'{ctx.author.mention} your stuff: {pic_url}')
+    save_score(str(ctx.author), score, pic_url)
+    await ctx.send(f"Submitted {ctx.author.mention}'s score of {score}")
 
 @submit.error
 async def invalid_submission(ctx, error):
     if isinstance(error, commands.UserInputError):
-        await ctx.send(f'print help or something {ctx.author.mention}')
-        await ctx.send_help()
+        await ctx.send(f'Incorrect command usage: {error}')
+        await ctx.send_help(submit)
+    else:
+        print(f'Error occurred: {error}')
+        await ctx.send(f":grimacing: {ctx.author.mention}'s submission did not go through. Please try again.")
 
 def validate_attachment(msg):
+    """Checks if a message includes 1 image attachment
+
+    Returns the image's proxy_url
+    """
+
     if len(msg.attachments) != 1:
-        raise commands.BadArgument
+        raise commands.TooManyArguments('needs one file attachment.')
     attachment = msg.attachments[0]
     if attachment.height is None or attachment.width is None:
-        raise commands.BadArgument
+        raise commands.BadArgument('file attachment must be an image.')
 
     return attachment.proxy_url
+
+def save_score(discord_name, score, pic_url):
+    return
 
 
 bot.run(token)
