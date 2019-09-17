@@ -1,0 +1,20 @@
+bot stuff:
+x initial bot setup
+- add things to db on submission
+- bot resume/catchup after off/on
+- bot testing?
+
+web stuff:
+- figure out django lol
+- implement auth req'd
+- view all submissions
+- view by week
+- view by user [in week?] (auto sort by latest submission)
+
+later later:
+- command to change week (restricted to faculty role)
+- host on heroku
+- better logging
+- discord oauth for front end login? :thinkingface:
+- if the bot told you what your upscore was (if you’re replacing one)
+like +[x] in green
