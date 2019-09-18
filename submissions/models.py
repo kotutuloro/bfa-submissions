@@ -4,14 +4,14 @@ from django.utils import timezone
 class Student(models.Model):
     # primary key: id (auto set by django)
     discord_id = models.CharField(
-        'discord username and discriminator, eg tropikiko#7800',
+        help_text='discord username and discriminator (eg: tropikiko#7800)',
         max_length=40,
         unique=True,
         blank=True,
         null=True,
         )
     dancer_name = models.CharField(
-        'in-game ddr dancer name',
+        'ddr dancer name',
         max_length=8,
         blank=True,
         )
@@ -25,6 +25,9 @@ class Student(models.Model):
         null=True,
         )
 
+    def __str__(self):
+        return f'discord: {self.discord_id} | ddr: {self.dancer_name or None}'
+
 class Submission(models.Model):
     # primary key: id (auto set by django)
     student = models.ForeignKey(
@@ -33,9 +36,12 @@ class Submission(models.Model):
         )
     score = models.PositiveIntegerField()
     pic_url = models.URLField(
-        'url to the picture for the submission',
+        'submission picture url',
         )
     submitted_at = models.DateTimeField(
-        'time submission was added to the database',
+        'submission time',
         auto_now_add=True,
         )
+
+    def __str__(self):
+        return f'{self.score} for {self.student.discord_id or self.student.dancer_name}'
