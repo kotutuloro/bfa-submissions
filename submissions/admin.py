@@ -2,6 +2,12 @@ from django.contrib import admin
 
 from .models import Student, Submission
 
+class SubmissionsAdminSite(admin.AdminSite):
+    site_header = 'BFA submissions administration'
+    site_title = 'BFA submissions admin'
+    site_url = None
+    index_title = 'Submissions admin'
+
 class SubmissionInline(admin.TabularInline):
 	model = Submission
 	max_num = 3
@@ -39,5 +45,7 @@ class SubmissionAdmin(admin.ModelAdmin):
 	ordering = ('-submitted_at', )
 	search_fields = ['student__discord_id', 'student__ddr_name']
 
-admin.site.register(Student, StudentAdmin)
-admin.site.register(Submission, SubmissionAdmin)
+admin_site = SubmissionsAdminSite()
+
+admin_site.register(Student, StudentAdmin)
+admin_site.register(Submission, SubmissionAdmin)
