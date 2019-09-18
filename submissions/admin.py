@@ -23,7 +23,7 @@ class SubmissionAdmin(admin.ModelAdmin):
 	search_fields = ['student__discord_id', 'student__ddr_name']
 
 	autocomplete_fields = ['student']
-	readonly_fields = ('submitted_at', )
+	readonly_fields = ('submitted_at', 'submission_picture')
 
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Submission, SubmissionAdmin)
