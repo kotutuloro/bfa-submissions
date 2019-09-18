@@ -10,8 +10,7 @@ class Student(models.Model):
         blank=True,
         null=True,
         )
-    dancer_name = models.CharField(
-        'ddr dancer name',
+    ddr_name = models.CharField(
         max_length=8,
         blank=True,
         )
@@ -26,7 +25,7 @@ class Student(models.Model):
         )
 
     def __str__(self):
-        return f'discord: {self.discord_id} | ddr: {self.dancer_name or None}'
+        return f'discord: {self.discord_id} | ddr: {self.ddr_name or None}'
 
 class Submission(models.Model):
     # primary key: id (auto set by django)
@@ -44,4 +43,4 @@ class Submission(models.Model):
         )
 
     def __str__(self):
-        return f'{self.score} for {self.student.discord_id or self.student.dancer_name}'
+        return f'{self.score} for {self.student.discord_id or self.student.ddr_name}'
