@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Student, Submission
+from .models import Student, Challenge, Submission
 
 class SubmissionsAdminSite(admin.AdminSite):
     site_header = 'BFA submissions administration'
@@ -31,6 +31,10 @@ class StudentAdmin(admin.ModelAdmin):
 	ordering = ('discord_id', )
 	search_fields = ['discord_id', 'ddr_name', 'twitter']
 
+class ChallengeAdmin(admin.ModelAdmin):
+	ordering = ('-week', )
+	search_fields = ['week', 'name']
+
 class SubmissionAdmin(admin.ModelAdmin):
 	autocomplete_fields = ['student']
 	readonly_fields = ('submitted_at', 'submission_picture')
@@ -48,4 +52,5 @@ class SubmissionAdmin(admin.ModelAdmin):
 admin_site = SubmissionsAdminSite()
 
 admin_site.register(Student, StudentAdmin)
+admin_site.register(Challenge, ChallengeAdmin)
 admin_site.register(Submission, SubmissionAdmin)
