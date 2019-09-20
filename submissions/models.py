@@ -51,3 +51,8 @@ class Submission(models.Model):
             '<img src={}>',
             self.pic_url
         )
+
+def save_score(discord_id, score, pic_url):
+    student = Student.objects.get_or_create(discord_id=discord_id)[0]
+    student.submission_set.create(score=score, pic_url=pic_url)
+    return

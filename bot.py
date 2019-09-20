@@ -3,6 +3,8 @@ import os
 import discord
 from discord.ext import commands
 
+from submissions.models import save_score
+
 description = 'A bot to help with weekly score submissions'
 bot = commands.Bot(command_prefix='!', description=description)
 
@@ -58,8 +60,5 @@ def validate_attachment(msg):
 
     return attachment.proxy_url
 
-def save_score(discord_name, score, pic_url):
-    return
-
-
-bot.run(token)
+if __name__ == '__main__':
+    bot.run(token)
