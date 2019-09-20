@@ -28,12 +28,34 @@ class Student(models.Model):
     def __str__(self):
         return f'discord: {self.discord_id} | ddr: {self.ddr_name or None}'
 
+class Challenge(models.Model):
+    week = models.PositiveIntegerField(
+        primary_key=True
+    )
+    # but make this an auto-increasing thing based on last id, not regular pk tracker
+    name = models.TextField()
+
+    def __str__(self):
+        return f'Week {self.week}: {self.name}'
+
+    # use get_latest_by instead?
+    @classmethod
+    def latest_challenge(cls):
+        """Find the latest challenge week."""
+
+        cls.objects.order_by('week').last
+
 class Submission(models.Model):
     # primary key: id (auto set by django)
     student = models.ForeignKey(
         Student,
         on_delete=models.PROTECT,
     )
+    # challenge = models.ForeignKey(
+    #     Challenge,
+    #     on_delete=models.PROTECT,
+    #     default=Challenge.latest_challenge,
+    # )
     score = models.PositiveIntegerField()
     pic_url = models.URLField(
         'submission picture url',
