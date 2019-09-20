@@ -50,3 +50,20 @@ class ModelHelperTests(TestCase):
             student.submission_set.all(),
             ['<Submission: 123 for discord#1234>']
         )
+
+    def test_save_score_returns_upscore(self):
+        """
+        Return the upscore difference between given score and last best score.
+        """
+
+        models.save_score('discord#1234', 100, 'url')
+        upscore = models.save_score('discord#1234', 1000, 'url')
+        self.assertEqual(upscore, 900)
+
+    def test_save_score_first_submission_returns_none(self):
+        """
+        Returns None if a Student didn't have a previous submission.
+        """
+
+        upscore = models.save_score('discord#1234', 123, 'url')
+        self.assertIsNone(upscore)

@@ -34,8 +34,13 @@ async def submit(ctx, score: int):
 
     print(f'rcvd cmd: {ctx.message}')
     pic_url = validate_attachment(ctx.message)
-    save_score(str(ctx.author), score, pic_url)
-    await ctx.send(f"Submitted {ctx.author.mention}'s score of {score}")
+    upscore = save_score(str(ctx.author), score, pic_url)
+
+    message = f"Submitted {ctx.author.mention}'s score of {score}"
+    if upscore is not None:
+        message = f'{message}\n+[{upscore}]!'
+
+    await ctx.send(message)
 
 @submit.error
 async def invalid_submission(ctx, error):

@@ -17,6 +17,5 @@ later later:
 - host on heroku
 - better logging
 - discord oauth for front end login? :thinkingface:
-- if the bot told you what your upscore was (if you’re replacing one)
-like +[x] in green
+x if the bot told you what your upscore was (if you’re replacing one) like +[x] in green
 - command to let students add/change their dancer name or twitter info
