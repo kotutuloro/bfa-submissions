@@ -36,18 +36,19 @@ class ChallengeAdmin(admin.ModelAdmin):
 	search_fields = ['week', 'name']
 
 class SubmissionAdmin(admin.ModelAdmin):
-	autocomplete_fields = ['student']
+	autocomplete_fields = ['student', 'challenge']
 	readonly_fields = ('submitted_at', 'submission_picture')
 
-	list_display = ('student', 'score', 'submitted_at')
+	list_display = ('student', 'challenge', 'score', 'submitted_at')
 	list_display_links = ('score', )
 	list_filter = (
 		'student__alum',
+		('challenge', admin.RelatedOnlyFieldListFilter),
 		('student', admin.RelatedOnlyFieldListFilter)
 	) # TODO: maybe also filter by verification
-	list_select_related = ('student', )
+	list_select_related = ('student', 'challenge')
 	ordering = ('-submitted_at', )
-	search_fields = ['student__discord_id', 'student__ddr_name']
+	search_fields = ['student__discord_id', 'student__ddr_name', 'challenge']
 
 admin_site = SubmissionsAdminSite()
 

@@ -3,6 +3,20 @@ from django.test import TestCase
 from . import models
 
 class ModelHelperTests(TestCase):
+    def setUp(self):
+        models.Challenge.objects.create(week=1, name='week1')
+
+    def test_new_submission_uses_latest_challenge(self):
+        """
+        Use the latest week for new submissions by default.
+        """
+
+        models.Challenge.objects.create(week=2, name='week2')
+
+        student = models.Student.objects.create(discord_id='discord#1234')
+        subm = student.submission_set.create(score=123)
+        self.assertEqual(subm.challenge.week, 2)
+
     def test_save_score_saves_score(self):
         """
         Save a Submission for a Student with the given discord_id.
