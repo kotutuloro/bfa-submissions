@@ -38,12 +38,18 @@ class Challenge(models.Model):
     def __str__(self):
         return f'Week {self.week}: {self.name}'
 
-    # use get_latest_by instead?
     @classmethod
-    def latest_challenge(cls):
+    def latest_week(cls):
         """Find the latest challenge week."""
 
-        cls.objects.order_by('week').last
+        try:
+            latest = cls.objects.latest()
+            return latest.week
+        except cls.DoesNotExist:
+            return
+
+    class Meta:
+        get_latest_by = 'week'
 
 class Submission(models.Model):
     # primary key: id (auto set by django)
@@ -51,11 +57,11 @@ class Submission(models.Model):
         Student,
         on_delete=models.PROTECT,
     )
-    # challenge = models.ForeignKey(
-    #     Challenge,
-    #     on_delete=models.PROTECT,
-    #     default=Challenge.latest_challenge,
-    # )
+    challenge = models.ForeignKey(
+        Challenge,
+        on_delete=models.PROTECT,
+        default=Challenge.latest_week,
+    )
     score = models.PositiveIntegerField()
     pic_url = models.URLField(
         'submission picture url',
