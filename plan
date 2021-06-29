@@ -3,6 +3,8 @@ x initial bot setup
 x add things to db on submission
 - bot resume/catchup after off/on
 - bot testing?
+- auto determine student level (freshman, etc) by discord role
+	- set on model with: https://docs.djangoproject.com/en/3.2/ref/models/fields/#choices
 
 web stuff:
 x figure out django lol
@@ -13,9 +15,23 @@ x figure out django lol
 - view by user [in week?] (auto sort by latest submission)
 
 later later:
-- command to change week (restricted to faculty role)
+- discord commands to close/open submissions (restricted to faculty role)
+- discord command to change week (restricted to faculty role)
 - host on heroku
 - better logging
 - discord oauth for front end login? :thinkingface:
 x if the bot told you what your upscore was (if you’re replacing one) like +[x] in green
 - command to let students add/change their dancer name or twitter info
+- <10000 if ex score challenge, >100000 if money score challenge?
+
+
+
+
+readme notes beep boop:
+- `source venv/bin/activate`
+- `python manage.py runserver`
+- `python manage.py test`
+- `python bot.py`
+- `python manage.py check --deploy` to look for things to change before actually putting it up
+- admin / admin
+- dev instructions / prod instructions

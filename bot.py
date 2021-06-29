@@ -24,6 +24,8 @@ async def on_ready():
 
 @bot.check
 async def correct_channel(ctx):
+    """Checks that message is posted in the correct channel before proceeding."""
+
     submission_channel = bot.get_channel(submission_channel_id)
     return ctx.channel == submission_channel
 
@@ -36,7 +38,7 @@ async def submit(ctx, score: int):
     <score> -- Your ex or money score (depending on the challenge) [digits only, no commas]
     """
 
-    print(f'rcvd cmd: {ctx.message}')
+    print(f'received cmd: {ctx.message}')
     pic_url = validate_attachment(ctx.message)
     upscore = save_score(str(ctx.author), score, pic_url)
 
