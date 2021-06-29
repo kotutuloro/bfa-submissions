@@ -3,6 +3,10 @@ import os
 import discord
 from discord.ext import commands
 
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bfa.settings')
+django.setup()
+
 from submissions.models import save_score
 
 description = 'A bot to help with weekly score submissions'
