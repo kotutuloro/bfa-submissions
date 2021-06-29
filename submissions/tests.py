@@ -2,20 +2,22 @@ from django.test import TestCase
 
 from . import models
 
-class ModelHelperTests(TestCase):
-    def setUp(self):
-        models.Challenge.objects.create(week=1, name='week1')
-
+class ModelTests(TestCase):
     def test_new_submission_uses_latest_challenge(self):
         """
-        Use the latest week for new submissions by default.
+        Use the latest (greatest) week for new submissions by default.
         """
 
         models.Challenge.objects.create(week=2, name='week2')
+        models.Challenge.objects.create(week=1, name='week1')
 
         student = models.Student.objects.create(discord_id='discord#1234')
         subm = student.submission_set.create(score=123)
         self.assertEqual(subm.challenge.week, 2)
+
+class ModelHelperTests(TestCase):
+    def setUp(self):
+        models.Challenge.objects.create(week=1, name='week1')
 
     def test_save_score_saves_score(self):
         """
@@ -43,6 +45,11 @@ class ModelHelperTests(TestCase):
             models.Student.objects.first().discord_id,
             'discord#1234'
         )
+
+        student = models.Student.objects.first()
+        submission = student.submission_set.first()
+        self.assertEqual(submission.score, 123)
+        self.assertEqual(submission.pic_url, 'url')
 
     def test_save_score_uses_existing_student(self):
         """
@@ -74,9 +81,19 @@ class ModelHelperTests(TestCase):
         upscore = models.save_score('discord#1234', 1000, 'url')
         self.assertEqual(upscore, 900)
 
+    def test_save_score_returns_negative_upscore(self):
+        """
+        Return the upscore difference between given score and last best score,
+        even if the given score is lower.
+        """
+
+        models.save_score('discord#1234', 1000, 'url')
+        upscore = models.save_score('discord#1234', 100, 'url')
+        self.assertEqual(upscore, -900)
+
     def test_save_score_first_submission_returns_none(self):
         """
-        Returns None if a Student didn't have a previous submission.
+        Return None if a Student didn't have a previous submission.
         """
 
         upscore = models.save_score('discord#1234', 123, 'url')
