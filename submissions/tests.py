@@ -69,7 +69,8 @@ class ModelHelperTests(TestCase):
         self.assertEqual(student.ddr_name, 'DDR')
         self.assertQuerysetEqual(
             student.submission_set.all(),
-            ['<Submission: 123 for discord#1234>']
+            ['<Submission: 123 for discord#1234>'],
+            transform=repr
         )
 
     def test_save_score_returns_upscore(self):
