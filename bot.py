@@ -75,6 +75,7 @@ def validate_attachment(msg):
     return attachment.proxy_url
 
 @bot.command()
+@commands.has_any_role('Admin', 'Faculty', 'TO')
 async def newweek(ctx, week: typing.Optional[int], *, name):
     """Start a new weekly challenge
 
@@ -94,6 +95,8 @@ async def invalid_new_week(ctx, error):
     if isinstance(error, commands.UserInputError):
         await ctx.send(f'Incorrect command usage: {error}')
         await ctx.send_help(ctx.command)
+    elif isinstance(error, commands.MissingAnyRole):
+        await ctx.send(f'Sorry {ctx.author.mention}, only faculty, admins, and TOs can use that command!')
     else:
         print(f'Error occurred in `{ctx.command}`: {error.__class__.__name__}: {error}')
         await ctx.send(f":grimacing: An error occurred creating that challenge! Please try again {ctx.author.mention}.")
