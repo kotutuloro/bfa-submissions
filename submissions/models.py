@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils import timezone
 from django.utils.html import format_html
-
 from channels.db import database_sync_to_async
 
 class Student(models.Model):
@@ -34,7 +33,6 @@ class Challenge(models.Model):
     week = models.PositiveIntegerField(
         primary_key=True
     )
-    # but make this an auto-increasing thing based on last id, not regular pk tracker
     name = models.TextField()
 
     def __str__(self):
@@ -87,7 +85,7 @@ def async_save_score(discord_id, score, pic_url):
     return save_score(discord_id, score, pic_url)
 
 def save_score(discord_id, score, pic_url):
-    """Add new Submission for a Student. Returns score diff from best submission.
+    """Adds new Submission for a Student. Returns score diff from best submission.
 
     Gets or creates a Student for the given discord_id.
     Adds Submission for that student, and returns the difference between the
@@ -103,3 +101,15 @@ def save_score(discord_id, score, pic_url):
         return new_subm.score - highest_subm.score
 
     return
+
+@database_sync_to_async
+def async_new_week(week, name):
+    return new_week(week, name)
+
+def new_week(week, name):
+    """Creates a new challenge. If week is None, uses latest week + 1."""
+
+    if week is None:
+        week = Challenge.latest_week() + 1
+
+    return Challenge.objects.create(week=week, name=name)

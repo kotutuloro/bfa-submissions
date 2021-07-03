@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.db.utils import IntegrityError
 
 from . import models
 
@@ -99,3 +100,33 @@ class ModelHelperTests(TestCase):
 
         upscore = models.save_score('discord#1234', 123, 'url')
         self.assertIsNone(upscore)
+
+    def test_new_week_creates_challenge(self):
+        """
+        Create and return a challenge with the provided week and name.
+        """
+
+        new_challenge = models.new_week(3, 'testweek')
+        self.assertEqual(new_challenge.week, 3)
+        self.assertEqual(new_challenge.name, 'testweek')
+
+        self.assertEqual(models.Challenge.objects.get(week=3), new_challenge)
+
+    def test_new_week_uses_latest_week_if_no_week(self):
+        """
+        Uses the latest week if provided week is None.
+        """
+
+        # latest week
+        models.Challenge.objects.create(week=7, name='week2')
+
+        new_challenge = models.new_week(None, 'testweek')
+        self.assertEqual(new_challenge.week, 8) # latest + 1
+
+    def test_new_week_raises_exception_for_duplicate_week(self):
+        """
+        Raises a django IntegrityError if the week already exists
+        """
+
+        with self.assertRaises(IntegrityError):
+            models.Challenge.objects.create(week=1, name="anotha one")
