@@ -15,7 +15,7 @@ x figure out django lol
 - view by user [in week?] (auto sort by latest submission)
 
 later later:
-- discord commands to close/open submissions (restricted to faculty role)
+x discord commands to close/open submissions (restricted to faculty role)
 - discord command to change week (restricted to faculty role)
 - host on heroku
 - better logging

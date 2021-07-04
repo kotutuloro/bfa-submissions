@@ -1,13 +1,13 @@
 import os
+import typing
 
-import discord
 from discord.ext import commands
-
 import django
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bfa.settings')
 django.setup()
 
-from submissions.models import async_save_score
+from submissions.models import async_save_score, async_new_week
 
 description = 'A bot to help with weekly score submissions'
 bot = commands.Bot(command_prefix='!', description=description)
@@ -73,6 +73,33 @@ def validate_attachment(msg):
         raise commands.BadArgument('file attachment must be an image.')
 
     return attachment.proxy_url
+
+@bot.command()
+@commands.has_any_role('Admin', 'Faculty', 'TO')
+async def newweek(ctx, week: typing.Optional[int], *, name):
+    """Start a new weekly challenge
+
+    [week] -- **Optional** Week number (defaults to the greatest existing week + 1)
+    <name> -- Name of the new weekly challenge
+    """
+
+    try:
+        challenge = await async_new_week(week, name)
+    except django.db.utils.IntegrityError:
+        await ctx.send(f'{ctx.author.mention} Week number {week} already exists!')
+    else:
+        await ctx.send(f'Week {challenge.week}: {challenge.name} has begun!')
+
+@newweek.error
+async def invalid_new_week(ctx, error):
+    if isinstance(error, commands.UserInputError):
+        await ctx.send(f'Incorrect command usage: {error}')
+        await ctx.send_help(ctx.command)
+    elif isinstance(error, commands.MissingAnyRole):
+        await ctx.send(f'Sorry {ctx.author.mention}, only faculty, admins, and TOs can use that command!')
+    else:
+        print(f'Error occurred in `{ctx.command}`: {error.__class__.__name__}: {error}')
+        await ctx.send(f":grimacing: An error occurred creating that challenge! Please try again {ctx.author.mention}.")
 
 if __name__ == '__main__':
     bot.run(token)
