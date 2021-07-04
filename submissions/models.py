@@ -2,6 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.html import format_html
 
+from channels.db import database_sync_to_async
+
 class Student(models.Model):
     # primary key: id (auto set by django)
     discord_id = models.CharField(
@@ -79,6 +81,10 @@ class Submission(models.Model):
             '<img src={}>',
             self.pic_url
         )
+
+@database_sync_to_async
+def async_save_score(discord_id, score, pic_url):
+    return save_score(discord_id, score, pic_url)
 
 def save_score(discord_id, score, pic_url):
     """Add new Submission for a Student. Returns score diff from best submission.

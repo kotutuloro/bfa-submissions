@@ -7,7 +7,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bfa.settings')
 django.setup()
 
-from submissions.models import save_score
+from submissions.models import async_save_score
 
 description = 'A bot to help with weekly score submissions'
 bot = commands.Bot(command_prefix='!', description=description)
@@ -40,7 +40,7 @@ async def submit(ctx, score: int):
 
     print(f'received cmd: {ctx.message}')
     pic_url = validate_attachment(ctx.message)
-    upscore = save_score(str(ctx.author), score, pic_url)
+    upscore = await async_save_score(str(ctx.author), score, pic_url)
 
     message = f"Submitted {ctx.author.mention}'s score of {score}"
 
