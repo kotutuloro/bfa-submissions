@@ -38,6 +38,9 @@ class Student(models.Model):
     def __str__(self):
         return f'discord: {self.discord_id} | ddr: {self.ddr_name or None}'
 
+    def top_score(self, week):
+        return self.submission_set.filter(challenge=week).order_by('score').last()
+
 class Challenge(models.Model):
     week = models.PositiveIntegerField(
         primary_key=True
@@ -83,7 +86,6 @@ class Submission(models.Model):
     def __str__(self):
         return f'{self.score} for {self.student.discord_id or self.student.ddr_name}'
 
-
 @database_sync_to_async
 def async_save_score(discord_id, score, pic_url):
     return save_score(discord_id, score, pic_url)
@@ -98,9 +100,7 @@ def save_score(discord_id, score, pic_url):
     """
 
     student = Student.objects.get_or_create(discord_id=discord_id)[0]
-    highest_subm = student.submission_set.filter(
-        challenge=Challenge.latest_week()
-        ).order_by('score').last()
+    highest_subm = student.top_score(Challenge.latest_week())
     new_subm = student.submission_set.create(score=score, pic_url=pic_url)
 
     if highest_subm is not None:
