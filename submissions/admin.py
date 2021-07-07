@@ -57,11 +57,11 @@ class SubmissionAdmin(admin.ModelAdmin):
 	autocomplete_fields = ['student', 'challenge']
 	readonly_fields = ('submitted_at', 'submission_picture')
 
-	list_display = ('student', 'challenge', 'score', 'submitted_at')
+	list_display = ('challenge', 'score', 'student', 'submitted_at')
 	list_display_links = ('score', )
 	list_filter = (
-		'student__level',
 		('challenge', admin.RelatedOnlyFieldListFilter),
+		'student__level',
 		('student', admin.RelatedOnlyFieldListFilter)
 	) # TODO: maybe also filter by verification
 	list_select_related = ('student', 'challenge')

@@ -88,11 +88,6 @@ Not yet lol
 
 ## Things to do
 
-important/bugfixes:
-- [ ] fix submission upscore calculation (should only use latest week's scores)
-- [ ] add level to student model
-  - https://docs.djangoproject.com/en/3.2/ref/models/fields/#choices
-
 bot stuff:
 - [x] initial bot setup
 - [x] add things to db on submission
@@ -102,10 +97,11 @@ bot stuff:
 
 web stuff:
 - [x] figure out django lol
-- [ ] implement auth req'd (adding views to admin? https://docs.djangoproject.com/en/2.2/ref/contrib/admin/#adding-views-to-admin-sites)
-- [ ] view all submissions
-- [ ] view by week + role/level
-- [ ] view by user (in week?) (auto sort by latest or highest submission)
+- [x] implement auth req'd
+- [x] view all submissions
+- [x] view by week + role/level
+- [x] view by user (in week?) (auto sort by latest or highest submission)
+- [ ] leaderboard view (https://docs.djangoproject.com/en/3.2/ref/contrib/admin/#adding-views-to-admin-sites)
 
 later:
 - [ ] discord commands to close/open submissions (restricted to faculty role)
