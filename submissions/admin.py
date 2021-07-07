@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.forms import BaseInlineFormSet
 from django.utils.html import format_html
+from django.urls import reverse
 
 from .models import Student, Challenge, Submission
 
@@ -43,6 +44,15 @@ class StudentAdmin(admin.ModelAdmin):
 class ChallengeAdmin(admin.ModelAdmin):
     ordering = ('-week', )
     search_fields = ['week', 'name']
+    list_display = ('__str__', 'leaderboard')
+
+    @admin.display()
+    def leaderboard(self, obj):
+        r = reverse('admin:submissions_submission_changelist')
+        return format_html(
+            '<a href="{}?leaderboard=true&challenge__week__exact={}">Leaderboard</a>',
+            r, obj.week
+        )
 
 class TopScoresFilter(admin.SimpleListFilter):
     title = 'Leaderboard View'
