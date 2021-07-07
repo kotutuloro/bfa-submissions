@@ -35,11 +35,11 @@ class SubmissionInline(admin.TabularInline):
 class StudentAdmin(admin.ModelAdmin):
     inlines = [SubmissionInline]
 
-    list_display = ('discord_id', 'ddr_name', 'twitter', 'level')
-    list_display_links = ('discord_id', 'ddr_name')
+    list_display = ('discord_name', 'ddr_name', 'twitter', 'level')
+    list_display_links = ('discord_name', 'ddr_name')
     list_filter = ('level', )
-    ordering = ('discord_id', )
-    search_fields = ['discord_id', 'ddr_name', 'twitter']
+    ordering = ('discord_name', )
+    search_fields = ['discord_name', 'ddr_name', 'twitter']
 
 class ChallengeAdmin(admin.ModelAdmin):
     ordering = ('-week', )
@@ -91,7 +91,7 @@ class SubmissionAdmin(admin.ModelAdmin):
     ) # TODO: maybe also filter by verification
     list_select_related = ('student', 'challenge')
     ordering = ('-challenge', '-score', 'submitted_at', )
-    search_fields = ['student__discord_id', 'student__ddr_name', 'challenge']
+    search_fields = ['student__discord_name', 'student__ddr_name', 'challenge']
 
     @admin.display()
     def submission_picture(self, obj):
