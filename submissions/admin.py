@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.forms import BaseInlineFormSet
 
 from .models import Student, Challenge, Submission
 
@@ -8,10 +9,17 @@ class SubmissionsAdminSite(admin.AdminSite):
     site_url = None
     index_title = 'Submissions admin'
 
+class LimitModelFormset(BaseInlineFormSet):
+    """ Base Inline formset to limit inline Model query results."""
+    def __init__(self, *args, **kwargs):
+        super(LimitModelFormset, self).__init__(*args, **kwargs)
+        _kwargs = {self.fk.name: kwargs['instance']}
+        self.queryset = kwargs['queryset'].filter(**_kwargs).order_by('-id')[:5]
+
 class SubmissionInline(admin.TabularInline):
 	model = Submission
-	max_num = 3
 	show_change_link = True
+	formset = LimitModelFormset
 
 	ordering = ['-submitted_at']
 
