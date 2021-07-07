@@ -29,10 +29,6 @@ class Student(models.Model):
         max_length=20,
         blank=True,
     )
-    alum = models.BooleanField(
-        'alumnus / upperclassman',
-        null=True,
-    )
     level = models.CharField(
         'division',
         max_length=2,

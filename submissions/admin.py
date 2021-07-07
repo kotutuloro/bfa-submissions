@@ -25,9 +25,9 @@ class SubmissionInline(admin.TabularInline):
 class StudentAdmin(admin.ModelAdmin):
 	inlines = [SubmissionInline]
 
-	list_display = ('discord_id', 'ddr_name', 'twitter', 'alum')
+	list_display = ('discord_id', 'ddr_name', 'twitter', 'level')
 	list_display_links = ('discord_id', 'ddr_name')
-	list_filter = ('alum', ) # TODO: maybe a filter about needing info
+	list_filter = ('level', )
 	ordering = ('discord_id', )
 	search_fields = ['discord_id', 'ddr_name', 'twitter']
 
@@ -42,7 +42,7 @@ class SubmissionAdmin(admin.ModelAdmin):
 	list_display = ('student', 'challenge', 'score', 'submitted_at')
 	list_display_links = ('score', )
 	list_filter = (
-		'student__alum',
+		'student__level',
 		('challenge', admin.RelatedOnlyFieldListFilter),
 		('student', admin.RelatedOnlyFieldListFilter)
 	) # TODO: maybe also filter by verification
