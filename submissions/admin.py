@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.forms import BaseInlineFormSet
+from django.utils.html import format_html
 
 from .models import Student, Challenge, Submission
 
@@ -44,6 +45,15 @@ class ChallengeAdmin(admin.ModelAdmin):
 	search_fields = ['week', 'name']
 
 class SubmissionAdmin(admin.ModelAdmin):
+
+	def submission_picture(self, obj):
+		return format_html(
+			'''<a target="_blank" href="{}">
+			<img src={} style="max-width:100%; max-height:700px">
+			</a>''',
+			obj.pic_url, obj.pic_url
+		)
+
 	autocomplete_fields = ['student', 'challenge']
 	readonly_fields = ('submitted_at', 'submission_picture')
 

@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils import timezone
-from django.utils.html import format_html
 from channels.db import database_sync_to_async
 
 class Student(models.Model):
@@ -84,11 +83,6 @@ class Submission(models.Model):
     def __str__(self):
         return f'{self.score} for {self.student.discord_id or self.student.ddr_name}'
 
-    def submission_picture(self):
-        return format_html(
-            '<img src={}>',
-            self.pic_url
-        )
 
 @database_sync_to_async
 def async_save_score(discord_id, score, pic_url):
