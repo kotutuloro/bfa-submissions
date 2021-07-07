@@ -4,6 +4,14 @@ from django.utils.html import format_html
 from channels.db import database_sync_to_async
 
 class Student(models.Model):
+
+    class LevelPlacement(models.TextChoices):
+        JUNIOR_VARSITY = 'JV'
+        FRESHMAN = 'FR'
+        VARSITY = 'VA'
+        GRADUATE = 'GR'
+        UNKNOWN = ''
+
     # primary key: id (auto set by django)
     discord_id = models.CharField(
         help_text='discord username and discriminator (eg: tropikiko#7800)',
@@ -21,9 +29,11 @@ class Student(models.Model):
         max_length=20,
         blank=True,
     )
-    alum = models.BooleanField(
-        'alumnus / upperclassman',
-        null=True,
+    level = models.CharField(
+        'division',
+        max_length=2,
+        choices=LevelPlacement.choices,
+        default=LevelPlacement.UNKNOWN,
     )
 
     def __str__(self):
