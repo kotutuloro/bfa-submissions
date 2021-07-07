@@ -44,6 +44,29 @@ class ChallengeAdmin(admin.ModelAdmin):
     ordering = ('-week', )
     search_fields = ['week', 'name']
 
+class TopScoresFilter(admin.SimpleListFilter):
+    title = 'Leaderboard View'
+    parameter_name = 'leaderboard'
+
+    def lookups(self, req, model_admin):
+        return (
+            ('true', "Only show students' top scores"),
+        )
+
+    def queryset(self, req, queryset):
+        if self.value() == 'true':
+            # this nested for loop is probably gonna get gross if we use this
+            # bot for long enough haha sorryyyy
+            tops=[]
+            for s in Student.objects.all():
+                for c in Challenge.objects.all():
+                    top = s.top_score(c)
+                    if top is not None:
+                        tops.append(top.id)
+            return queryset.filter(id__in=tops)
+        else:
+            return queryset
+
 class SubmissionAdmin(admin.ModelAdmin):
     autocomplete_fields = ['student', 'challenge']
     readonly_fields = ('submitted_at', 'submission_picture')
@@ -51,12 +74,13 @@ class SubmissionAdmin(admin.ModelAdmin):
     list_display = ('challenge', 'score', 'student', 'submitted_at')
     list_display_links = ('score', )
     list_filter = (
+        TopScoresFilter,
         ('challenge', admin.RelatedOnlyFieldListFilter),
         'student__level',
         ('student', admin.RelatedOnlyFieldListFilter)
     ) # TODO: maybe also filter by verification
     list_select_related = ('student', 'challenge')
-    ordering = ('-submitted_at', )
+    ordering = ('-challenge', '-score', 'submitted_at', )
     search_fields = ['student__discord_id', 'student__ddr_name', 'challenge']
 
     @admin.display()
