@@ -94,7 +94,9 @@ def save_score(discord_id, score, pic_url):
     """
 
     student = Student.objects.get_or_create(discord_id=discord_id)[0]
-    highest_subm = student.submission_set.order_by('score').last()
+    highest_subm = student.submission_set.filter(
+        challenge=Challenge.latest_week()
+        ).order_by('score').last()
     new_subm = student.submission_set.create(score=score, pic_url=pic_url)
 
     if highest_subm is not None:

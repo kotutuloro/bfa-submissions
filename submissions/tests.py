@@ -93,6 +93,19 @@ class ModelHelperTests(TestCase):
         upscore = models.save_score('discord#1234', 100, 'url')
         self.assertEqual(upscore, -900)
 
+    def test_save_score_returns_upscore_for_current_week(self):
+        """
+        Does not use scores from previous weeks.
+        """
+
+        models.save_score('discord#1234', 500, 'url')
+
+        models.Challenge.objects.create(week=2, name='week2')
+        models.save_score('discord#1234', 100, 'url')
+
+        upscore = models.save_score('discord#1234', 1000, 'url')
+        self.assertEqual(upscore, 900)
+
     def test_save_score_first_submission_returns_none(self):
         """
         Return None if a Student didn't have a previous submission.
