@@ -45,15 +45,6 @@ class ChallengeAdmin(admin.ModelAdmin):
     search_fields = ['week', 'name']
 
 class SubmissionAdmin(admin.ModelAdmin):
-
-    def submission_picture(self, obj):
-        return format_html(
-            '''<a target="_blank" href="{}">
-            <img src={} style="max-width:100%; max-height:700px">
-            </a>''',
-            obj.pic_url, obj.pic_url
-        )
-
     autocomplete_fields = ['student', 'challenge']
     readonly_fields = ('submitted_at', 'submission_picture')
 
@@ -67,6 +58,15 @@ class SubmissionAdmin(admin.ModelAdmin):
     list_select_related = ('student', 'challenge')
     ordering = ('-submitted_at', )
     search_fields = ['student__discord_id', 'student__ddr_name', 'challenge']
+
+    @admin.display()
+    def submission_picture(self, obj):
+        return format_html(
+            '''<a target="_blank" href="{}">
+            <img src={} style="max-width:100%; max-height:700px">
+            </a>''',
+            obj.pic_url, obj.pic_url
+        )
 
 admin_site = SubmissionsAdminSite()
 
