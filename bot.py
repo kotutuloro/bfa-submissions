@@ -44,10 +44,11 @@ async def submit(ctx, score: int):
 
     message = f"Submitted {ctx.author.mention}'s score of {score}"
 
-    if upscore < 0:
-        message = f"{message}\nThis is {abs(upscore)} lower than your highest submission this week, but I saved the photo just in case."
-    elif upscore is not None:
-        message = f'{message}\n+[{upscore}] upscore!'
+    if upscore is not None:
+        if upscore < 0:
+            message = f"{message}\nThis is {abs(upscore)} lower than your highest submission this week, but I saved the photo just in case."
+        else:
+            message = f'{message}\n+{upscore} upscore!'
 
     await ctx.send(message)
 
