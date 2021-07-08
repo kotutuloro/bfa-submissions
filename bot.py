@@ -64,9 +64,7 @@ async def invalid_submission(ctx, error):
         await ctx.send(f'Incorrect command usage: {error}')
         await ctx.send_help(submit)
     else:
-        print(f'Error occurred: {error}')
-        await ctx.send(f":grimacing: {ctx.author.mention}'s submission did not go through. Please try again.")
-        raise error
+        await generic_on_error(ctx, error)
 
 def validate_attachment(msg):
     """Checks if a message includes 1 image attachment
@@ -125,8 +123,16 @@ async def invalid_new_week(ctx, error):
     elif isinstance(error, commands.MissingAnyRole):
         await ctx.send(f'Sorry {ctx.author.mention}, only faculty, admins, and TOs can use that command!')
     else:
+        await generic_on_error(ctx, error)
+
+async def generic_on_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        # it's either in a dm or in the wrong channel, in which case the bot
+        # should stay silent.
+        pass
+    else:
         print(f'Error occurred in `{ctx.command}`: {error.__class__.__name__}: {error}')
-        await ctx.send(f":grimacing: An error occurred creating that challenge! Please try again {ctx.author.mention}.")
+        await ctx.send(f":grimacing: An error occurred running that command! Please try again {ctx.author.mention}.")
         raise error
 
 if __name__ == '__main__':
