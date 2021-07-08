@@ -12,6 +12,9 @@ class Student(models.Model):
         UNKNOWN = ''
 
     # primary key: id (auto set by django)
+    discord_snowflake_id = models.BigIntegerField(
+        unique=True,
+    )
     discord_name = models.CharField(
         help_text='discord username and discriminator (eg: tropikiko#7800)',
         max_length=40,
@@ -36,7 +39,7 @@ class Student(models.Model):
     )
 
     def __str__(self):
-        return f'discord: {self.discord_name} | ddr: {self.ddr_name or None}'
+        return f'discord: {self.discord_name} | ddr: {self.ddr_name or "<unknown>"}'
 
     def top_score(self, week):
         return self.submission_set.filter(challenge=week).order_by('score').last()

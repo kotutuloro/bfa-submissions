@@ -12,7 +12,10 @@ class ModelTests(TestCase):
         models.Challenge.objects.create(week=2, name='week2')
         models.Challenge.objects.create(week=1, name='week1')
 
-        student = models.Student.objects.create(discord_name='discord#1234')
+        student = models.Student.objects.create(
+            discord_snowflake_id=99999,
+            discord_name='discord#1234',
+        )
         subm = student.submission_set.create(score=123)
         self.assertEqual(subm.challenge.week, 2)
 
@@ -25,8 +28,12 @@ class ModelHelperTests(TestCase):
         Save a Submission for a Student with the given discord_name.
         """
 
+        student = models.Student.objects.create(
+            discord_snowflake_id=99999,
+            discord_name='discord#1234',
+        )
         models.save_score('discord#1234', 123, 'url')
-        student = models.Student.objects.get(discord_name='discord#1234')
+
         self.assertEqual(student.submission_set.count(), 1)
         submission = student.submission_set.first()
         self.assertEqual(submission.score, 123)
@@ -58,6 +65,7 @@ class ModelHelperTests(TestCase):
         """
 
         models.Student.objects.create(
+            discord_snowflake_id=99999,
             discord_name='discord#1234',
             ddr_name="DDR"
         )
