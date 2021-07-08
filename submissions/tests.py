@@ -81,48 +81,52 @@ class StudentTests(TestCase):
 
 class ModelHelperTests(TestCase):
 
-    # def test_save_score_makes_new_student(self):
-    #     """
-    #     If a Student with the given discord_name doesn't already exist,
-    #     create one and use it.
-    #     """
+    def test_put_student_makes_new_student(self):
+        """
+        If a Student with the given discord_snowflake_id doesn't already exist,
+        create one and return it.
+        """
 
-    #     self.assertEqual(models.Student.objects.count(), 0)
+        self.assertEqual(models.Student.objects.count(), 0)
+        student = models.put_student(
+            99999,
+            'discord#1234',
+            models.Student.LevelPlacement.FRESHMAN,
+        )
 
-    #     models.save_score('discord#1234', 123, 'url')
-    #     self.assertEqual(models.Student.objects.count(), 1)
-    #     self.assertEqual(
-    #         models.Student.objects.first().discord_name,
-    #         'discord#1234'
-    #     )
+        self.assertEqual(models.Student.objects.count(), 1)
+        self.assertEqual(student, models.Student.objects.first())
 
-    #     student = models.Student.objects.first()
-    #     submission = student.submission_set.first()
-    #     self.assertEqual(submission.score, 123)
-    #     self.assertEqual(submission.pic_url, 'url')
+        self.assertEqual(student.discord_snowflake_id, 99999)
+        self.assertEqual(student.discord_name, 'discord#1234')
+        self.assertEqual(student.level, models.Student.LevelPlacement.FRESHMAN)
 
-    # def test_save_score_uses_existing_student(self):
-    #     """
-    #     If a Student with the given discord_name already exists, use it.
-    #     """
+    def test_put_student_uses_existing_student(self):
+        """
+        If a Student with the given discord_snowflake_id already exists,
+        update and return it.
+        """
 
-    #     models.Student.objects.create(
-    #         discord_snowflake_id=99999,
-    #         discord_name='discord#1234',
-    #         ddr_name="DDR"
-    #     )
-    #     self.assertEqual(models.Student.objects.count(), 1)
+        models.Student.objects.create(
+            discord_snowflake_id=99999,
+            discord_name='discord#1234',
+            ddr_name='DDR',
+            level=models.Student.LevelPlacement.VARSITY,
+        )
+        self.assertEqual(models.Student.objects.count(), 1)
 
-    #     models.save_score('discord#1234', 123, 'url')
-    #     self.assertEqual(models.Student.objects.count(), 1)
+        student = models.put_student(
+            99999,
+            'newname#1234',
+            models.Student.LevelPlacement.GRADUATE,
+        )
+        self.assertEqual(models.Student.objects.count(), 1)
+        self.assertEqual(student, models.Student.objects.first())
 
-    #     student = models.Student.objects.first()
-    #     self.assertEqual(student.ddr_name, 'DDR')
-    #     self.assertQuerysetEqual(
-    #         student.submission_set.all(),
-    #         ['<Submission: 123 for discord#1234>'],
-    #         transform=repr
-    #     )
+        self.assertEqual(student.discord_snowflake_id, 99999)
+        self.assertEqual(student.discord_name, 'newname#1234')
+        self.assertEqual(student.level, models.Student.LevelPlacement.GRADUATE)
+        self.assertEqual(student.ddr_name, 'DDR')
 
     def test_new_week_creates_challenge(self):
         """

@@ -111,11 +111,14 @@ def async_save_score(discord_snowflake_id, discord_name, level, score, pic_url):
     return student.save_score(score, pic_url)
 
 def put_student(discord_snowflake_id, discord_name, level):
-    # student, _ = Student.objects.get_or_create(
-    #     discord_snowflake_id=discord_snowflake_id,
-    #     discord_name=discord_name,
-    # )
-    pass
+    student, _ = Student.objects.update_or_create(
+        discord_snowflake_id=discord_snowflake_id,
+        defaults={
+            'discord_name': discord_name,
+            'level': level,
+        }
+    )
+    return student
 
 @database_sync_to_async
 def async_new_week(week, name):
