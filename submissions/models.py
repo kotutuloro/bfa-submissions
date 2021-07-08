@@ -12,7 +12,10 @@ class Student(models.Model):
         UNKNOWN = ''
 
     # primary key: id (auto set by django)
-    discord_id = models.CharField(
+    discord_snowflake_id = models.BigIntegerField(
+        unique=True,
+    )
+    discord_name = models.CharField(
         help_text='discord username and discriminator (eg: tropikiko#7800)',
         max_length=40,
         unique=True,
@@ -36,7 +39,23 @@ class Student(models.Model):
     )
 
     def __str__(self):
-        return f'discord: {self.discord_id} | ddr: {self.ddr_name or None}'
+        return f'discord: {self.discord_name} | ddr: {self.ddr_name or "<unknown>"}'
+
+    def save_score(self, score, pic_url):
+        """Adds new Submission for a Student. Returns score diff from best submission.
+
+        Adds Submission for given student, and returns the difference between the
+        given score and the previous best submission if it exists.
+        Returns None if this is the first submission.
+        """
+
+        highest_subm = self.top_score(Challenge.latest_week())
+        new_subm = self.submission_set.create(score=score, pic_url=pic_url)
+
+        if highest_subm is not None:
+            return new_subm.score - highest_subm.score
+
+        return
 
     def top_score(self, week):
         return self.submission_set.filter(challenge=week).order_by('score').last()
@@ -84,29 +103,22 @@ class Submission(models.Model):
     )
 
     def __str__(self):
-        return f'{self.score} for {self.student.discord_id or self.student.ddr_name}'
+        return f'{self.score} for {self.student.discord_name or self.student.ddr_name}'
 
 @database_sync_to_async
-def async_save_score(discord_id, score, pic_url):
-    return save_score(discord_id, score, pic_url)
+def async_save_score(discord_snowflake_id, discord_name, level, score, pic_url):
+    student = put_student(discord_snowflake_id, discord_name, level)
+    return student.save_score(score, pic_url)
 
-def save_score(discord_id, score, pic_url):
-    """Adds new Submission for a Student. Returns score diff from best submission.
-
-    Gets or creates a Student for the given discord_id.
-    Adds Submission for that student, and returns the difference between the
-    given score and the previous best submission if it exists.
-    Returns None if this is the first submission.
-    """
-
-    student = Student.objects.get_or_create(discord_id=discord_id)[0]
-    highest_subm = student.top_score(Challenge.latest_week())
-    new_subm = student.submission_set.create(score=score, pic_url=pic_url)
-
-    if highest_subm is not None:
-        return new_subm.score - highest_subm.score
-
-    return
+def put_student(discord_snowflake_id, discord_name, level):
+    student, _ = Student.objects.update_or_create(
+        discord_snowflake_id=discord_snowflake_id,
+        defaults={
+            'discord_name': discord_name,
+            'level': level,
+        }
+    )
+    return student
 
 @database_sync_to_async
 def async_new_week(week, name):

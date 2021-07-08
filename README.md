@@ -93,7 +93,7 @@ bot stuff:
 - [x] add things to db on submission
 - [ ] bot testing?
 - [ ] bot resume/catchup after off/on
-- [ ] auto determine student level (freshman, etc) by discord role
+- [x] auto determine student level (freshman, etc) by discord role
 
 web stuff:
 - [x] figure out django lol
@@ -101,16 +101,16 @@ web stuff:
 - [x] view all submissions
 - [x] view by week + role/level
 - [x] view by user (in week?) (auto sort by latest or highest submission)
-- [ ] leaderboard view (https://docs.djangoproject.com/en/3.2/ref/contrib/admin/#adding-views-to-admin-sites)
+- [x] leaderboard view (https://docs.djangoproject.com/en/3.2/ref/contrib/admin/#adding-views-to-admin-sites)
 
 later:
 - [ ] discord commands to close/open submissions (restricted to faculty role)
 - [x] discord command to change week (restricted to faculty role)
+- [ ] command to let students add/change their dancer name or twitter info
 - [ ] `python manage.py check --deploy` to look for things to change before actually hosting it
 - [ ] host on heroku
 - [ ] discord oauth for front end login? :thinkingface:
 - [x] if the bot told you what your upscore was (if you’re replacing one) like +[x] in green
-- [ ] command to let students add/change their dancer name or twitter info
 - [ ] add reaction & reply to messages in response
 
 refactoring / legibility

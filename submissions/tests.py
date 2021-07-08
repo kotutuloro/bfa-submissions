@@ -3,7 +3,7 @@ from django.db.utils import IntegrityError
 
 from . import models
 
-class ModelTests(TestCase):
+class SubmissionTests(TestCase):
     def test_new_submission_uses_latest_challenge(self):
         """
         Use the latest (greatest) week for new submissions by default.
@@ -12,75 +12,40 @@ class ModelTests(TestCase):
         models.Challenge.objects.create(week=2, name='week2')
         models.Challenge.objects.create(week=1, name='week1')
 
-        student = models.Student.objects.create(discord_id='discord#1234')
+        student = models.Student.objects.create(
+            discord_snowflake_id=99999,
+            discord_name='discord#1234',
+        )
         subm = student.submission_set.create(score=123)
         self.assertEqual(subm.challenge.week, 2)
 
-class ModelHelperTests(TestCase):
+class StudentTests(TestCase):
     def setUp(self):
         models.Challenge.objects.create(week=1, name='week1')
+        self.student = models.Student.objects.create(
+            discord_snowflake_id=99999,
+            discord_name='discord#1234',
+        )
 
     def test_save_score_saves_score(self):
         """
-        Save a Submission for a Student with the given discord_id.
+        Save a Submission for a Student with the given discord_name.
         """
 
-        models.save_score('discord#1234', 123, 'url')
-        student = models.Student.objects.get(discord_id='discord#1234')
-        self.assertEqual(student.submission_set.count(), 1)
-        submission = student.submission_set.first()
+        self.student.save_score(123, 'url')
+
+        self.assertEqual(self.student.submission_set.count(), 1)
+        submission = self.student.submission_set.first()
         self.assertEqual(submission.score, 123)
         self.assertEqual(submission.pic_url, 'url')
-
-    def test_save_score_makes_new_student(self):
-        """
-        If a Student with the given discord_id doesn't already exist,
-        create one and use it.
-        """
-
-        self.assertEqual(models.Student.objects.count(), 0)
-
-        models.save_score('discord#1234', 123, 'url')
-        self.assertEqual(models.Student.objects.count(), 1)
-        self.assertEqual(
-            models.Student.objects.first().discord_id,
-            'discord#1234'
-        )
-
-        student = models.Student.objects.first()
-        submission = student.submission_set.first()
-        self.assertEqual(submission.score, 123)
-        self.assertEqual(submission.pic_url, 'url')
-
-    def test_save_score_uses_existing_student(self):
-        """
-        If a Student with the given discord_id already exists, use it.
-        """
-
-        models.Student.objects.create(
-            discord_id='discord#1234',
-            ddr_name="DDR"
-        )
-        self.assertEqual(models.Student.objects.count(), 1)
-
-        models.save_score('discord#1234', 123, 'url')
-        self.assertEqual(models.Student.objects.count(), 1)
-
-        student = models.Student.objects.first()
-        self.assertEqual(student.ddr_name, 'DDR')
-        self.assertQuerysetEqual(
-            student.submission_set.all(),
-            ['<Submission: 123 for discord#1234>'],
-            transform=repr
-        )
 
     def test_save_score_returns_upscore(self):
         """
         Return the upscore difference between given score and last best score.
         """
 
-        models.save_score('discord#1234', 100, 'url')
-        upscore = models.save_score('discord#1234', 1000, 'url')
+        self.student.save_score(100, 'url')
+        upscore = self.student.save_score(1000, 'url')
         self.assertEqual(upscore, 900)
 
     def test_save_score_returns_negative_upscore(self):
@@ -89,8 +54,8 @@ class ModelHelperTests(TestCase):
         even if the given score is lower.
         """
 
-        models.save_score('discord#1234', 1000, 'url')
-        upscore = models.save_score('discord#1234', 100, 'url')
+        self.student.save_score(1000, 'url')
+        upscore = self.student.save_score(100, 'url')
         self.assertEqual(upscore, -900)
 
     def test_save_score_returns_upscore_for_current_week(self):
@@ -98,12 +63,12 @@ class ModelHelperTests(TestCase):
         Does not use scores from previous weeks.
         """
 
-        models.save_score('discord#1234', 500, 'url')
+        self.student.save_score(500, 'url')
 
         models.Challenge.objects.create(week=2, name='week2')
-        models.save_score('discord#1234', 100, 'url')
+        self.student.save_score(100, 'url')
 
-        upscore = models.save_score('discord#1234', 1000, 'url')
+        upscore = self.student.save_score(1000, 'url')
         self.assertEqual(upscore, 900)
 
     def test_save_score_first_submission_returns_none(self):
@@ -111,8 +76,57 @@ class ModelHelperTests(TestCase):
         Return None if a Student didn't have a previous submission.
         """
 
-        upscore = models.save_score('discord#1234', 123, 'url')
+        upscore = self.student.save_score(123, 'url')
         self.assertIsNone(upscore)
+
+class ModelHelperTests(TestCase):
+
+    def test_put_student_makes_new_student(self):
+        """
+        If a Student with the given discord_snowflake_id doesn't already exist,
+        create one and return it.
+        """
+
+        self.assertEqual(models.Student.objects.count(), 0)
+        student = models.put_student(
+            99999,
+            'discord#1234',
+            models.Student.LevelPlacement.FRESHMAN,
+        )
+
+        self.assertEqual(models.Student.objects.count(), 1)
+        self.assertEqual(student, models.Student.objects.first())
+
+        self.assertEqual(student.discord_snowflake_id, 99999)
+        self.assertEqual(student.discord_name, 'discord#1234')
+        self.assertEqual(student.level, models.Student.LevelPlacement.FRESHMAN)
+
+    def test_put_student_uses_existing_student(self):
+        """
+        If a Student with the given discord_snowflake_id already exists,
+        update and return it.
+        """
+
+        models.Student.objects.create(
+            discord_snowflake_id=99999,
+            discord_name='discord#1234',
+            ddr_name='DDR',
+            level=models.Student.LevelPlacement.VARSITY,
+        )
+        self.assertEqual(models.Student.objects.count(), 1)
+
+        student = models.put_student(
+            99999,
+            'newname#1234',
+            models.Student.LevelPlacement.GRADUATE,
+        )
+        self.assertEqual(models.Student.objects.count(), 1)
+        self.assertEqual(student, models.Student.objects.first())
+
+        self.assertEqual(student.discord_snowflake_id, 99999)
+        self.assertEqual(student.discord_name, 'newname#1234')
+        self.assertEqual(student.level, models.Student.LevelPlacement.GRADUATE)
+        self.assertEqual(student.ddr_name, 'DDR')
 
     def test_new_week_creates_challenge(self):
         """
@@ -141,5 +155,6 @@ class ModelHelperTests(TestCase):
         Raises a django IntegrityError if the week already exists
         """
 
+        models.Challenge.objects.create(week=1, name='week1')
         with self.assertRaises(IntegrityError):
             models.Challenge.objects.create(week=1, name="anotha one")

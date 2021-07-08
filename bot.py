@@ -7,7 +7,8 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bfa.settings')
 django.setup()
 
-from submissions.models import async_save_score, async_new_week
+from submissions.models import async_save_score, async_new_week, Student
+DIVISIONS = Student.LevelPlacement
 
 description = 'A bot to help with weekly score submissions'
 bot = commands.Bot(command_prefix='!', description=description)
@@ -40,14 +41,16 @@ async def submit(ctx, score: int):
 
     print(f'received cmd: {ctx.message}')
     pic_url = validate_attachment(ctx.message)
-    upscore = await async_save_score(str(ctx.author), score, pic_url)
+    div = get_division(ctx.author.roles)
+    upscore = await async_save_score(ctx.author.id, str(ctx.author), div, score, pic_url)
 
     message = f"Submitted {ctx.author.mention}'s score of {score}"
 
-    if upscore < 0:
-        message = f"{message}\nThis is {abs(upscore)} lower than your highest submission this week, but I saved the photo just in case."
-    elif upscore is not None:
-        message = f'{message}\n+[{upscore}] upscore!'
+    if upscore is not None:
+        if upscore < 0:
+            message = f"{message}\nThis is {abs(upscore)} lower than your highest submission this week, but I saved the photo just in case."
+        else:
+            message = f'{message}\n+{upscore} upscore!'
 
     await ctx.send(message)
 
@@ -59,6 +62,7 @@ async def invalid_submission(ctx, error):
     else:
         print(f'Error occurred: {error}')
         await ctx.send(f":grimacing: {ctx.author.mention}'s submission did not go through. Please try again.")
+        raise error
 
 def validate_attachment(msg):
     """Checks if a message includes 1 image attachment
@@ -73,6 +77,25 @@ def validate_attachment(msg):
         raise commands.BadArgument('file attachment must be an image.')
 
     return attachment.proxy_url
+
+def get_division(roles_list):
+    """Finds the highest division in a given list of Roles.
+
+    Returns the code for that division based on Student.LevelPlacement choices.
+    """
+
+    divs = {
+        'Graduate': DIVISIONS.GRADUATE,
+        'Varsity': DIVISIONS.VARSITY,
+        'Freshman': DIVISIONS.FRESHMAN,
+        'JV': DIVISIONS.JUNIOR_VARSITY,
+    }
+
+    role_names = {role.name for role in roles_list}
+    for div, code in divs.items():
+        if div in role_names:
+            return code
+    return DIVISIONS.UNKNOWN
 
 @bot.command()
 @commands.has_any_role('Admin', 'Faculty', 'TO')
@@ -100,6 +123,7 @@ async def invalid_new_week(ctx, error):
     else:
         print(f'Error occurred in `{ctx.command}`: {error.__class__.__name__}: {error}')
         await ctx.send(f":grimacing: An error occurred creating that challenge! Please try again {ctx.author.mention}.")
+        raise error
 
 if __name__ == '__main__':
     bot.run(token)
