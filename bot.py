@@ -40,7 +40,7 @@ async def submit(ctx, score: int):
 
     print(f'received cmd: {ctx.message}')
     pic_url = validate_attachment(ctx.message)
-    upscore = await async_save_score(str(ctx.author), score, pic_url)
+    upscore = await async_save_score('temp', str(ctx.author), 'temp', score, pic_url)
 
     message = f"Submitted {ctx.author.mention}'s score of {score}"
 
