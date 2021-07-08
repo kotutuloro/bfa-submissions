@@ -7,7 +7,8 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bfa.settings')
 django.setup()
 
-from submissions.models import async_save_score, async_new_week
+from submissions.models import async_save_score, async_new_week, Student
+DIVISIONS = Student.LevelPlacement
 
 description = 'A bot to help with weekly score submissions'
 bot = commands.Bot(command_prefix='!', description=description)
@@ -40,7 +41,8 @@ async def submit(ctx, score: int):
 
     print(f'received cmd: {ctx.message}')
     pic_url = validate_attachment(ctx.message)
-    upscore = await async_save_score('temp', str(ctx.author), 'temp', score, pic_url)
+    div = get_division(ctx.author.roles)
+    upscore = await async_save_score(ctx.author.id, str(ctx.author), div, score, pic_url)
 
     message = f"Submitted {ctx.author.mention}'s score of {score}"
 
@@ -74,6 +76,25 @@ def validate_attachment(msg):
         raise commands.BadArgument('file attachment must be an image.')
 
     return attachment.proxy_url
+
+def get_division(roles_list):
+    """Finds the highest division in a given list of Roles.
+
+    Returns the code for that division based on Student.LevelPlacement choices.
+    """
+
+    divs = {
+        'Graduate': DIVISIONS.GRADUATE,
+        'Varsity': DIVISIONS.VARSITY,
+        'Freshman': DIVISIONS.FRESHMAN,
+        'JV': DIVISIONS.JUNIOR_VARSITY,
+    }
+
+    role_names = {role.name for role in roles_list}
+    for div, code in divs.items():
+        if div in role_names:
+            return code
+    return DIVISIONS.UNKNOWN
 
 @bot.command()
 @commands.has_any_role('Admin', 'Faculty', 'TO')
