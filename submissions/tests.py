@@ -3,7 +3,7 @@ from django.db.utils import IntegrityError
 
 from . import models
 
-class ModelTests(TestCase):
+class SubmissionTests(TestCase):
     def test_new_submission_uses_latest_challenge(self):
         """
         Use the latest (greatest) week for new submissions by default.
@@ -19,7 +19,7 @@ class ModelTests(TestCase):
         subm = student.submission_set.create(score=123)
         self.assertEqual(subm.challenge.week, 2)
 
-class ModelHelperTests(TestCase):
+class StudentTests(TestCase):
     def setUp(self):
         models.Challenge.objects.create(week=1, name='week1')
         self.student = models.Student.objects.create(
@@ -38,6 +38,48 @@ class ModelHelperTests(TestCase):
         submission = self.student.submission_set.first()
         self.assertEqual(submission.score, 123)
         self.assertEqual(submission.pic_url, 'url')
+
+    def test_save_score_returns_upscore(self):
+        """
+        Return the upscore difference between given score and last best score.
+        """
+
+        self.student.save_score(100, 'url')
+        upscore = self.student.save_score(1000, 'url')
+        self.assertEqual(upscore, 900)
+
+    def test_save_score_returns_negative_upscore(self):
+        """
+        Return the upscore difference between given score and last best score,
+        even if the given score is lower.
+        """
+
+        self.student.save_score(1000, 'url')
+        upscore = self.student.save_score(100, 'url')
+        self.assertEqual(upscore, -900)
+
+    def test_save_score_returns_upscore_for_current_week(self):
+        """
+        Does not use scores from previous weeks.
+        """
+
+        self.student.save_score(500, 'url')
+
+        models.Challenge.objects.create(week=2, name='week2')
+        self.student.save_score(100, 'url')
+
+        upscore = self.student.save_score(1000, 'url')
+        self.assertEqual(upscore, 900)
+
+    def test_save_score_first_submission_returns_none(self):
+        """
+        Return None if a Student didn't have a previous submission.
+        """
+
+        upscore = self.student.save_score(123, 'url')
+        self.assertIsNone(upscore)
+
+class ModelHelperTests(TestCase):
 
     # def test_save_score_makes_new_student(self):
     #     """
@@ -82,46 +124,6 @@ class ModelHelperTests(TestCase):
     #         transform=repr
     #     )
 
-    def test_save_score_returns_upscore(self):
-        """
-        Return the upscore difference between given score and last best score.
-        """
-
-        self.student.save_score(100, 'url')
-        upscore = self.student.save_score(1000, 'url')
-        self.assertEqual(upscore, 900)
-
-    def test_save_score_returns_negative_upscore(self):
-        """
-        Return the upscore difference between given score and last best score,
-        even if the given score is lower.
-        """
-
-        self.student.save_score(1000, 'url')
-        upscore = self.student.save_score(100, 'url')
-        self.assertEqual(upscore, -900)
-
-    def test_save_score_returns_upscore_for_current_week(self):
-        """
-        Does not use scores from previous weeks.
-        """
-
-        self.student.save_score(500, 'url')
-
-        models.Challenge.objects.create(week=2, name='week2')
-        self.student.save_score(100, 'url')
-
-        upscore = self.student.save_score(1000, 'url')
-        self.assertEqual(upscore, 900)
-
-    def test_save_score_first_submission_returns_none(self):
-        """
-        Return None if a Student didn't have a previous submission.
-        """
-
-        upscore = self.student.save_score(123, 'url')
-        self.assertIsNone(upscore)
-
     def test_new_week_creates_challenge(self):
         """
         Create and return a challenge with the provided week and name.
@@ -149,5 +151,6 @@ class ModelHelperTests(TestCase):
         Raises a django IntegrityError if the week already exists
         """
 
+        models.Challenge.objects.create(week=1, name='week1')
         with self.assertRaises(IntegrityError):
             models.Challenge.objects.create(week=1, name="anotha one")
