@@ -24,6 +24,10 @@ async def on_ready():
     print('~*~*~*~*~*~*~*~')
 
 @bot.check
+async def globally_block_dms(ctx):
+    return ctx.guild is not None
+
+@bot.check
 async def correct_channel(ctx):
     """Checks that message is posted in the correct channel before proceeding."""
 
