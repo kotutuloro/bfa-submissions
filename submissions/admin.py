@@ -22,6 +22,7 @@ class SubmissionInline(admin.TabularInline):
     model = Submission
     show_change_link = True
     formset = LimitModelFormset
+    verbose_name_plural = "Most Recent Submissions"
 
     ordering = ['-submitted_at']
 
@@ -35,6 +36,7 @@ class SubmissionInline(admin.TabularInline):
 class StudentAdmin(admin.ModelAdmin):
     inlines = [SubmissionInline]
 
+    readonly_fields = ('discord_snowflake_id', )
     list_display = ('discord_name', 'ddr_name', 'twitter', 'level')
     list_display_links = ('discord_name', 'ddr_name')
     list_filter = ('level', )

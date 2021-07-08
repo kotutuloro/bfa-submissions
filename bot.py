@@ -62,6 +62,7 @@ async def invalid_submission(ctx, error):
     else:
         print(f'Error occurred: {error}')
         await ctx.send(f":grimacing: {ctx.author.mention}'s submission did not go through. Please try again.")
+        raise error
 
 def validate_attachment(msg):
     """Checks if a message includes 1 image attachment
@@ -122,6 +123,7 @@ async def invalid_new_week(ctx, error):
     else:
         print(f'Error occurred in `{ctx.command}`: {error.__class__.__name__}: {error}')
         await ctx.send(f":grimacing: An error occurred creating that challenge! Please try again {ctx.author.mention}.")
+        raise error
 
 if __name__ == '__main__':
     bot.run(token)
