@@ -13,9 +13,6 @@ DIVISIONS = Student.LevelPlacement
 description = 'A bot to help with weekly score submissions'
 bot = commands.Bot(command_prefix='!', description=description)
 
-token = os.getenv('DISCORD_BOT_TOKEN')
-submission_channel_id = int(os.getenv('SUBMISSION_CHANNEL_ID'))
-
 
 @bot.event
 async def on_ready():
@@ -31,8 +28,7 @@ async def globally_block_dms(ctx):
 async def correct_channel(ctx):
     """Checks that message is posted in the correct channel before proceeding."""
 
-    submission_channel = bot.get_channel(submission_channel_id)
-    return ctx.channel == submission_channel
+    return ctx.channel.id == int(os.getenv('SUBMISSION_CHANNEL_ID'))
 
 @bot.command()
 async def submit(ctx, score: int):
@@ -136,4 +132,7 @@ async def generic_on_error(ctx, error):
         raise error
 
 if __name__ == '__main__':
+    # ensure necessary env vars are set
+    os.environ['SUBMISSION_CHANNEL_ID']
+    token = os.environ['DISCORD_BOT_TOKEN']
     bot.run(token)

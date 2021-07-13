@@ -6,24 +6,53 @@ import discord
 from channels.db import database_sync_to_async
 
 import os
-os.environ["SUBMISSION_CHANNEL_ID"] = "123"
 
 from submissions import models
 import bot
 
 @pytest.fixture
-def test_bot(event_loop):
+async def test_bot(event_loop):
     intents = discord.Intents.default()
     intents.members = True
 
     test_bot = commands.Bot('!', loop=event_loop, intents=intents)
     test_bot.add_check(bot.globally_block_dms)
-    # test_bot.add_check(bot.correct_channel)
+    test_bot.add_check(bot.correct_channel)
     test_bot.add_command(bot.submit)
     test_bot.add_command(bot.newweek)
 
     dpytest.configure(client=test_bot, num_channels=2, num_members=3)
-    return test_bot
+
+    guild = test_bot.guilds[0]
+    submission_channel = guild.text_channels[0]
+    os.environ["SUBMISSION_CHANNEL_ID"] = str(submission_channel.id)
+
+    yield test_bot
+
+    await dpytest.empty_queue()
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
+async def test_bot_ignores_dms(test_bot):
+    guild = test_bot.guilds[0]
+    member = guild.members[0]
+    dm = await member.create_dm()
+
+    await ignore_discord_error(dpytest.message(content="!help", channel=dm))
+    await ignore_discord_error(dpytest.message(content="!submit", channel=dm))
+    await ignore_discord_error(dpytest.message(content="!newweek abc", channel=dm))
+    assert dpytest.verify().message().nothing()
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
+async def test_bot_ignores_other_channels(test_bot):
+    guild = test_bot.guilds[0]
+    other_channel = guild.text_channels[1]
+
+    await ignore_discord_error(dpytest.message(content="!help", channel=other_channel))
+    await ignore_discord_error(dpytest.message(content="!submit", channel=other_channel))
+    await ignore_discord_error(dpytest.message(content="!newweek abc", channel=other_channel))
+    assert dpytest.verify().message().nothing()
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
@@ -57,6 +86,14 @@ async def test_newweek_restricted_to_admin(test_bot):
     with pytest.raises(commands.MissingAnyRole):
         await dpytest.message(content="!newweek 1 newnew")
     assert dpytest.verify().message().contains().content("Sorry").content("only faculty, admins, and TOs")
+
+### Helpers
+
+async def ignore_discord_error(coro):
+    try:
+        await coro
+    except discord.DiscordException:
+        pass
 
 async def make_role_member(test_bot, role_name, member_index=0):
     guild = test_bot.guilds[member_index]
