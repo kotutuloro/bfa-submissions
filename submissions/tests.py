@@ -136,6 +136,7 @@ class ModelHelperTests(TestCase):
         new_challenge = models.new_week(3, 'testweek')
         self.assertEqual(new_challenge.week, 3)
         self.assertEqual(new_challenge.name, 'testweek')
+        self.assertTrue(new_challenge.is_open)
 
         self.assertEqual(models.Challenge.objects.get(week=3), new_challenge)
 
@@ -149,6 +150,19 @@ class ModelHelperTests(TestCase):
 
         new_challenge = models.new_week(None, 'testweek')
         self.assertEqual(new_challenge.week, 8) # latest + 1
+
+    def test_new_week_closes_previous_week(self):
+        """
+        Sets latest week's is_open field to False
+        """
+
+        # latest week
+        models.Challenge.objects.create(week=7, name='week2')
+
+        models.new_week(None, 'testweek')
+
+        last_challenge = models.Challenge.objects.get(week=7)
+        self.assertFalse(last_challenge.is_open)
 
     def test_new_week_raises_exception_for_duplicate_week(self):
         """
