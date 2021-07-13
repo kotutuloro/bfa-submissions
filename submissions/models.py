@@ -150,3 +150,19 @@ def new_week(week, name):
         week = latest + 1
 
     return Challenge.objects.create(week=week, name=name)
+
+@database_sync_to_async
+def close_submissions():
+    latest = Challenge.latest_week()
+    if latest:
+        c = Challenge.objects.get(week=latest)
+        c.close()
+        return c
+
+@database_sync_to_async
+def reopen_submissions():
+    latest = Challenge.latest_week()
+    if latest:
+        c = Challenge.objects.get(week=latest)
+        c.open()
+        return c

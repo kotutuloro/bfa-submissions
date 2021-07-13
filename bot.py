@@ -7,7 +7,14 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bfa.settings')
 django.setup()
 
-from submissions.models import async_save_score, async_new_week, Student
+from submissions.models import (
+    async_save_score,
+    async_new_week,
+    close_submissions,
+    reopen_submissions,
+    Student,
+)
+
 DIVISIONS = Student.LevelPlacement
 
 description = 'A bot to help with weekly score submissions'
@@ -111,8 +118,32 @@ async def newweek(ctx, week: typing.Optional[int], *, name):
     else:
         await ctx.send(f'Week {challenge.week}: {challenge.name} has begun!')
 
+@bot.command()
+@commands.has_any_role('Admin', 'Faculty', 'TO')
+async def close(ctx):
+    """Close submissions for the current weekly challenge"""
+
+    challenge = await close_submissions()
+    if challenge is not None:
+        await ctx.send(f'Pencils down! Submissions for Week {challenge.week}: {challenge.name} are now closed!')
+    else:
+        await ctx.send("(There's no challenge week to close.)")
+
+@bot.command()
+@commands.has_any_role('Admin', 'Faculty', 'TO')
+async def reopen(ctx):
+    """Reopen submissions for the current weekly challenge"""
+
+    challenge = await reopen_submissions()
+    if challenge is not None:
+        await ctx.send(f'Submissions for Week {challenge.week}: {challenge.name} are now reopen!')
+    else:
+        await ctx.send("(There's no challenge week to reopen.)")
+
 @newweek.error
-async def invalid_newweek(ctx, error):
+@close.error
+@reopen.error
+async def invalid_restricted(ctx, error):
     if isinstance(error, commands.UserInputError):
         await ctx.send(f'Incorrect command usage: {error}')
         await ctx.send_help(ctx.command)
