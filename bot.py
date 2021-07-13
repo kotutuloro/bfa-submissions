@@ -7,7 +7,15 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bfa.settings')
 django.setup()
 
-from submissions.models import async_save_score, async_new_week, Student
+from submissions.models import (
+    async_save_score,
+    async_new_week,
+    close_submissions,
+    reopen_submissions,
+    is_latest_week_open,
+    Student,
+)
+
 DIVISIONS = Student.LevelPlacement
 
 description = 'A bot to help with weekly score submissions'
@@ -30,7 +38,16 @@ async def correct_channel(ctx):
 
     return ctx.channel.id == int(os.getenv('SUBMISSION_CHANNEL_ID'))
 
+async def are_submissions_open(ctx):
+    """Checks that submissions are open before proceeding."""
+
+    if await is_latest_week_open():
+        return True
+    else:
+        raise commands.DisabledCommand
+
 @bot.command()
+@commands.check(are_submissions_open)
 async def submit(ctx, score: int):
     """Submit a score **with picture** for the BFA Weekly Challenge
 
@@ -56,7 +73,9 @@ async def submit(ctx, score: int):
 
 @submit.error
 async def invalid_submission(ctx, error):
-    if isinstance(error, commands.UserInputError):
+    if isinstance(error, commands.DisabledCommand):
+        await ctx.send(f'Sorry {ctx.author.mention}, submissions are currently closed.')
+    elif isinstance(error, commands.UserInputError):
         await ctx.send(f'Incorrect command usage: {error}')
         await ctx.send_help(submit)
     else:
@@ -111,8 +130,32 @@ async def newweek(ctx, week: typing.Optional[int], *, name):
     else:
         await ctx.send(f'Week {challenge.week}: {challenge.name} has begun!')
 
+@bot.command()
+@commands.has_any_role('Admin', 'Faculty', 'TO')
+async def close(ctx):
+    """Close submissions for the current weekly challenge"""
+
+    challenge = await close_submissions()
+    if challenge is not None:
+        await ctx.send(f'Pencils down! Submissions for Week {challenge.week}: {challenge.name} are now closed!')
+    else:
+        await ctx.send("(There's no challenge week to close.)")
+
+@bot.command()
+@commands.has_any_role('Admin', 'Faculty', 'TO')
+async def reopen(ctx):
+    """Reopen submissions for the current weekly challenge"""
+
+    challenge = await reopen_submissions()
+    if challenge is not None:
+        await ctx.send(f'Submissions for Week {challenge.week}: {challenge.name} are now reopen!')
+    else:
+        await ctx.send("(There's no challenge week to reopen.)")
+
 @newweek.error
-async def invalid_newweek(ctx, error):
+@close.error
+@reopen.error
+async def invalid_restricted(ctx, error):
     if isinstance(error, commands.UserInputError):
         await ctx.send(f'Incorrect command usage: {error}')
         await ctx.send_help(ctx.command)

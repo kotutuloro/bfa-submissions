@@ -20,6 +20,8 @@ async def test_bot(event_loop):
     test_bot.add_check(bot.correct_channel)
     test_bot.add_command(bot.submit)
     test_bot.add_command(bot.newweek)
+    test_bot.add_command(bot.close)
+    test_bot.add_command(bot.reopen)
 
     dpytest.configure(client=test_bot, num_channels=2, num_members=3)
 
@@ -115,6 +117,16 @@ async def test_submit_updates_student(test_bot):
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
+async def test_submit_not_allowed_during_closed_submissions(test_bot):
+    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1', is_open=False)
+
+    with pytest.raises(commands.DisabledCommand):
+        await dpytest.message(content="!submit 1234", attachments=["fake"])
+    assert dpytest.verify().message().contains().content("currently closed")
+    assert await database_sync_to_async(models.Submission.objects.count)() == 0
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
 async def test_newweek_creates_given_week(test_bot):
     admin = await make_role_member(test_bot, "Admin")
 
@@ -141,9 +153,71 @@ async def test_newweek_creates_next_week(test_bot):
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
+async def test_newweek_reopens_submissions(test_bot):
+    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1')
+
+    admin = await make_role_member(test_bot, "Admin")
+    await dpytest.message(content="!newweek anotha one", member=admin)
+
+    challenge = await database_sync_to_async(models.Challenge.objects.get)(week=2)
+    assert challenge.is_open
+
+    # test that submissions go through
+    await dpytest.message(content="!submit 1234", attachments=["fake"])
+    assert await database_sync_to_async(models.Submission.objects.count)() == 1
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
 async def test_newweek_restricted_to_admin(test_bot):
     with pytest.raises(commands.MissingAnyRole):
         await dpytest.message(content="!newweek 1 newnew")
+    assert dpytest.verify().message().contains().content("Sorry").content("only faculty, admins, and TOs")
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
+async def test_close_closes_submissions(test_bot):
+    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1', is_open=True)
+    admin = await make_role_member(test_bot, "Admin")
+
+    await dpytest.message(content="!close", member=admin)
+    assert dpytest.verify().message().contains().content("Week 1:").content("now closed")
+
+    challenge = await database_sync_to_async(models.Challenge.objects.get)(week=1)
+    assert not challenge.is_open
+
+    # test that submissions fail
+    with pytest.raises(commands.DisabledCommand):
+        await dpytest.message(content="!submit 1234", attachments=["fake"])
+    assert await database_sync_to_async(models.Submission.objects.count)() == 0
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
+async def test_close_restricted_to_admin(test_bot):
+    with pytest.raises(commands.MissingAnyRole):
+        await dpytest.message(content="!close")
+    assert dpytest.verify().message().contains().content("Sorry").content("only faculty, admins, and TOs")
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
+async def test_reopen_reopens_submissions(test_bot):
+    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1', is_open=False)
+    admin = await make_role_member(test_bot, "Admin")
+
+    await dpytest.message(content="!reopen", member=admin)
+    assert dpytest.verify().message().contains().content("Week 1:").content("now reopen")
+
+    challenge = await database_sync_to_async(models.Challenge.objects.get)(week=1)
+    assert challenge.is_open
+
+    # test that submissions go through
+    await dpytest.message(content="!submit 1234", attachments=["fake"])
+    assert await database_sync_to_async(models.Submission.objects.count)() == 1
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
+async def test_reopen_restricted_to_admin(test_bot):
+    with pytest.raises(commands.MissingAnyRole):
+        await dpytest.message(content="!reopen")
     assert dpytest.verify().message().contains().content("Sorry").content("only faculty, admins, and TOs")
 
 ### Helpers

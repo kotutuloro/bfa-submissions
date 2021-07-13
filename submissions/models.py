@@ -65,9 +65,18 @@ class Challenge(models.Model):
         primary_key=True
     )
     name = models.TextField()
+    is_open = models.BooleanField(default=True)
 
     def __str__(self):
         return f'Week {self.week}: {self.name}'
+
+    def open(self):
+        self.is_open = True
+        self.save()
+
+    def close(self):
+        self.is_open = False
+        self.save()
 
     @classmethod
     def latest_week(cls):
@@ -125,9 +134,43 @@ def async_new_week(week, name):
     return new_week(week, name)
 
 def new_week(week, name):
-    """Creates a new challenge. If week is None, uses latest week + 1."""
+    """Creates a new challenge. If week is None, uses latest week + 1.
+
+    Also closes the latest week's submissions.
+    """
+
+    latest = Challenge.latest_week()
+
+    if latest:
+        Challenge.objects.get(week=latest).close()
+    else:
+        latest = 0
 
     if week is None:
-        week = Challenge.latest_week() + 1
+        week = latest + 1
 
     return Challenge.objects.create(week=week, name=name)
+
+@database_sync_to_async
+def close_submissions():
+    latest = Challenge.latest_week()
+    if latest:
+        c = Challenge.objects.get(week=latest)
+        c.close()
+        return c
+
+@database_sync_to_async
+def reopen_submissions():
+    latest = Challenge.latest_week()
+    if latest:
+        c = Challenge.objects.get(week=latest)
+        c.open()
+        return c
+
+@database_sync_to_async
+def is_latest_week_open():
+    latest = Challenge.latest_week()
+    if latest:
+        c = Challenge.objects.get(week=latest)
+        return c.is_open
+    return False
