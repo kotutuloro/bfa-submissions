@@ -12,11 +12,16 @@ A discord bot that tracks submissions for Black Flag Academy's weekly challenges
 
 ### Faculty/Admin only
 
-`!newweek [optional week number] <challenge name>` - Start a new weekly challenge
+`!newweek [optional week number] <challenge name>` - Start a new weekly challenge and open submissions
+
+`!close` - Prevent submissions for the current challenge
+
+`!reopen` - Resume submissions for the current challenge
 
 ## Deployment/Management
 
 This app is hosted on heroku at https://bfa-submissions.herokuapp.com/.
+Changes merged to the main branch are automatically deployed.
 
 ### Configs
 
@@ -128,7 +133,7 @@ web stuff:
 - [x] leaderboard view (https://docs.djangoproject.com/en/3.2/ref/contrib/admin/#adding-views-to-admin-sites)
 
 later:
-- [ ] discord commands to close/open submissions (restricted to faculty role)
+- [x] discord commands to close/open submissions (restricted to faculty role)
 - [x] discord command to change week (restricted to faculty role)
 - [ ] command to let students add/change their dancer name or twitter info
 - [x] `python manage.py check --deploy` to look for things to change before actually hosting it
