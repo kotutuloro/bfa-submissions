@@ -116,7 +116,7 @@ async def newweek(ctx, week: typing.Optional[int], *, name):
         await ctx.send(f'Week {challenge.week}: {challenge.name} has begun!')
 
 @newweek.error
-async def invalid_new_week(ctx, error):
+async def invalid_newweek(ctx, error):
     if isinstance(error, commands.UserInputError):
         await ctx.send(f'Incorrect command usage: {error}')
         await ctx.send_help(ctx.command)
