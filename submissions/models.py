@@ -166,3 +166,11 @@ def reopen_submissions():
         c = Challenge.objects.get(week=latest)
         c.open()
         return c
+
+@database_sync_to_async
+def is_latest_week_open():
+    latest = Challenge.latest_week()
+    if latest:
+        c = Challenge.objects.get(week=latest)
+        return c.is_open
+    return False

@@ -117,6 +117,16 @@ async def test_submit_updates_student(test_bot):
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
+async def test_submit_not_allowed_during_closed_submissions(test_bot):
+    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1', is_open=False)
+
+    with pytest.raises(commands.DisabledCommand):
+        await dpytest.message(content="!submit 1234", attachments=["fake"])
+    assert dpytest.verify().message().contains().content("currently closed")
+    assert await database_sync_to_async(models.Submission.objects.count)() == 0
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
 async def test_newweek_creates_given_week(test_bot):
     admin = await make_role_member(test_bot, "Admin")
 
@@ -143,6 +153,21 @@ async def test_newweek_creates_next_week(test_bot):
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
+async def test_newweek_reopens_submissions(test_bot):
+    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1')
+
+    admin = await make_role_member(test_bot, "Admin")
+    await dpytest.message(content="!newweek anotha one", member=admin)
+
+    challenge = await database_sync_to_async(models.Challenge.objects.get)(week=2)
+    assert challenge.is_open
+
+    # test that submissions go through
+    await dpytest.message(content="!submit 1234", attachments=["fake"])
+    assert await database_sync_to_async(models.Submission.objects.count)() == 1
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
 async def test_newweek_restricted_to_admin(test_bot):
     with pytest.raises(commands.MissingAnyRole):
         await dpytest.message(content="!newweek 1 newnew")
@@ -160,7 +185,10 @@ async def test_close_closes_submissions(test_bot):
     challenge = await database_sync_to_async(models.Challenge.objects.get)(week=1)
     assert not challenge.is_open
 
-    # TODO: try to !submit (and expect failure)
+    # test that submissions fail
+    with pytest.raises(commands.DisabledCommand):
+        await dpytest.message(content="!submit 1234", attachments=["fake"])
+    assert await database_sync_to_async(models.Submission.objects.count)() == 0
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
@@ -181,7 +209,9 @@ async def test_reopen_reopens_submissions(test_bot):
     challenge = await database_sync_to_async(models.Challenge.objects.get)(week=1)
     assert challenge.is_open
 
-    # TODO: try to !submit (and expect success)
+    # test that submissions go through
+    await dpytest.message(content="!submit 1234", attachments=["fake"])
+    assert await database_sync_to_async(models.Submission.objects.count)() == 1
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
