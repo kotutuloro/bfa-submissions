@@ -65,6 +65,7 @@ class Challenge(models.Model):
         primary_key=True
     )
     name = models.TextField()
+    is_open = models.BooleanField(default=True)
 
     def __str__(self):
         return f'Week {self.week}: {self.name}'
