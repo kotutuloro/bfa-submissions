@@ -103,11 +103,11 @@ Instructions to run this from your local computer.
     source secrets.sh && python bot.py
     ```
 
-### Testing
+### Running tests
 
 -
     ```sh
-    python manage.py test
+    SECRET_KEY=abc pytest
     ```
 
 ## Things to do
@@ -115,7 +115,7 @@ Instructions to run this from your local computer.
 bot stuff:
 - [x] initial bot setup
 - [x] add things to db on submission
-- [ ] bot testing?
+- [x] bot testing
 - [ ] bot resume/catchup after off/on
 - [x] auto determine student level (freshman, etc) by discord role
 
