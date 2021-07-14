@@ -9,6 +9,7 @@ django.setup()
 
 from submissions.models import (
     async_save_score,
+    async_update_student,
     async_new_week,
     close_submissions,
     reopen_submissions,
@@ -94,6 +95,47 @@ def validate_attachment(msg):
         raise commands.BadArgument('file attachment must be an image.')
 
     return attachment.proxy_url
+
+@bot.command()
+async def addtwitter(ctx, twitter):
+    """Add twitter username to your Student profile
+
+    <twitter> -- Your twitter username
+    """
+
+    div = get_division(ctx.author.roles)
+    await async_update_student(
+        ctx.author.id,
+        discord_name=str(ctx.author),
+        level=div,
+        twitter=twitter,
+    )
+    await ctx.send(f"Updated {ctx.author.mention}'s' profile!")
+
+@bot.command()
+async def addname(ctx, ddr_name):
+    """Add DDR name to your Student profile
+
+    <ddr_name> -- Your DDR name (ex. KEEKSTER)
+    """
+
+    div = get_division(ctx.author.roles)
+    await async_update_student(
+        ctx.author.id,
+        discord_name=str(ctx.author),
+        level=div,
+        ddr_name=ddr_name,
+    )
+    await ctx.send(f"Updated {ctx.author.mention}'s' profile!")
+
+@addtwitter.error
+@addname.error
+async def invalid_update(ctx, error):
+    if isinstance(error, commands.UserInputError):
+        await ctx.send(f'Incorrect command usage: {error}')
+        await ctx.send_help(submit)
+    else:
+        await generic_on_error(ctx, error)
 
 def get_division(roles_list):
     """Finds the highest division in a given list of Roles.

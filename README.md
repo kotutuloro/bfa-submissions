@@ -10,6 +10,10 @@ A discord bot that tracks submissions for Black Flag Academy's weekly challenges
 
 `!submit <score> {attached photo}` - Submit a score **with picture** for the BFA Weekly Challenge. This command requires a photo attachment to be part of the message.
 
+`!addtwitter <twitter>` - Add twitter username to Student profile
+
+`!addname <ddr_name>` - Add DDR name (ex. KEEKSTER) to Student profile
+
 ### Faculty/Admin only
 
 `!newweek [optional week number] <challenge name>` - Start a new weekly challenge and open submissions
@@ -135,7 +139,7 @@ web stuff:
 later:
 - [x] discord commands to close/open submissions (restricted to faculty role)
 - [x] discord command to change week (restricted to faculty role)
-- [ ] command to let students add/change their dancer name or twitter info
+- [x] command to let students add/change their dancer name or twitter info
 - [x] `python manage.py check --deploy` to look for things to change before actually hosting it
 - [x] host on heroku
 - [ ] discord oauth for front end login? :thinkingface:
