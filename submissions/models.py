@@ -123,6 +123,10 @@ def async_save_score(discord_snowflake_id, discord_name, level, score, pic_url):
     )
     return student.save_score(score, pic_url)
 
+@database_sync_to_async
+def async_update_student(discord_snowflake_id, **kwargs):
+    return put_student(discord_snowflake_id, **kwargs)
+
 def put_student(discord_snowflake_id, **kwargs):
     student, _ = Student.objects.update_or_create(
         discord_snowflake_id=discord_snowflake_id,
