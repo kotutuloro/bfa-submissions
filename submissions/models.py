@@ -31,7 +31,7 @@ class Student(models.Model):
         blank=True,
     )
     level = models.CharField(
-        'division',
+        'division (most recent)',
         max_length=2,
         choices=LevelPlacement.choices,
         default=LevelPlacement.UNKNOWN,
@@ -104,6 +104,12 @@ class Submission(models.Model):
     score = models.PositiveIntegerField()
     pic_url = models.URLField(
         'submission picture url',
+    )
+    level = models.CharField(
+        'division (at submission time)',
+        max_length=2,
+        choices=LevelPlacement.choices,
+        default=LevelPlacement.UNKNOWN,
     )
     submitted_at = models.DateTimeField(
         'submission time',
