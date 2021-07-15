@@ -46,7 +46,7 @@ class StudentAdmin(admin.ModelAdmin):
 class ChallengeAdmin(admin.ModelAdmin):
     ordering = ('-week', )
     search_fields = ['week', 'name']
-    list_display = ('__str__', 'leaderboard')
+    list_display = ('__str__', 'leaderboard', 'is_open')
 
     @admin.display()
     def leaderboard(self, obj):
@@ -83,17 +83,22 @@ class SubmissionAdmin(admin.ModelAdmin):
     autocomplete_fields = ['student', 'challenge']
     readonly_fields = ('submitted_at', 'submission_picture')
 
-    list_display = ('challenge', 'score', 'student', 'submitted_at')
+    list_display = ('challenge', 'score', 'student', 'level', 'submitted_at')
     list_display_links = ('score', )
     list_filter = (
         TopScoresFilter,
         ('challenge', admin.RelatedOnlyFieldListFilter),
-        'student__level',
+        'level',
         ('student', admin.RelatedOnlyFieldListFilter)
     ) # TODO: maybe also filter by verification
     list_select_related = ('student', 'challenge')
-    ordering = ('-challenge', '-score', 'submitted_at', )
-    search_fields = ['student__discord_name', 'student__ddr_name', 'challenge']
+    ordering = ('-challenge', 'level', '-score', 'submitted_at', )
+    search_fields = [
+        'student__discord_name',
+        'student__ddr_name',
+        'challenge__week',
+        'challenge__name'
+    ]
 
     @admin.display()
     def submission_picture(self, obj):
