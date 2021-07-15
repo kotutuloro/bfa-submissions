@@ -2,15 +2,14 @@ from django.db import models
 from django.utils import timezone
 from channels.db import database_sync_to_async
 
+class LevelPlacement(models.TextChoices):
+    JUNIOR_VARSITY = 'JV'
+    FRESHMAN = 'FR'
+    VARSITY = 'VA'
+    GRADUATE = 'GR'
+    UNKNOWN = ''
+
 class Student(models.Model):
-
-    class LevelPlacement(models.TextChoices):
-        JUNIOR_VARSITY = 'JV'
-        FRESHMAN = 'FR'
-        VARSITY = 'VA'
-        GRADUATE = 'GR'
-        UNKNOWN = ''
-
     # primary key: id (auto set by django)
     discord_snowflake_id = models.BigIntegerField(
         unique=True,
@@ -32,7 +31,7 @@ class Student(models.Model):
         blank=True,
     )
     level = models.CharField(
-        'division',
+        'division (most recent)',
         max_length=2,
         choices=LevelPlacement.choices,
         default=LevelPlacement.UNKNOWN,
@@ -50,7 +49,7 @@ class Student(models.Model):
         """
 
         highest_subm = self.top_score(Challenge.latest_week())
-        new_subm = self.submission_set.create(score=score, pic_url=pic_url)
+        new_subm = self.submission_set.create(score=score, pic_url=pic_url, level=self.level)
 
         if highest_subm is not None:
             return new_subm.score - highest_subm.score
@@ -105,6 +104,12 @@ class Submission(models.Model):
     score = models.PositiveIntegerField()
     pic_url = models.URLField(
         'submission picture url',
+    )
+    level = models.CharField(
+        'division (at submission time)',
+        max_length=2,
+        choices=LevelPlacement.choices,
+        default=LevelPlacement.UNKNOWN,
     )
     submitted_at = models.DateTimeField(
         'submission time',

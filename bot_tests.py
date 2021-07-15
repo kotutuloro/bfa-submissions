@@ -65,11 +65,12 @@ async def test_bot_ignores_other_channels(test_bot):
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 async def test_submit_creates_submission(test_bot):
-    sender = test_bot.guilds[0].members[0]
+    sender = await make_role_member(test_bot, "Freshman")
 
     await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1')
     student = await database_sync_to_async(models.Student.objects.create)(
         discord_snowflake_id=sender.id,
+        level=models.LevelPlacement.FRESHMAN,
     )
 
     await dpytest.message(content="!submit 1234", member=sender, attachments=["fake"])
@@ -78,6 +79,7 @@ async def test_submit_creates_submission(test_bot):
     assert subm.score == 1234
     assert subm.challenge_id == 1
     assert subm.student_id == student.id
+    assert subm.level == student.level
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
@@ -100,7 +102,7 @@ async def test_submit_creates_student(test_bot):
     assert student is not None
     assert student.discord_snowflake_id == sender.id
     assert student.discord_name == f'{sender.name}#{sender.discriminator}'
-    assert student.level == models.Student.LevelPlacement.FRESHMAN
+    assert student.level == models.LevelPlacement.FRESHMAN
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
@@ -111,7 +113,7 @@ async def test_submit_updates_student(test_bot):
     existing_student = await database_sync_to_async(models.Student.objects.create)(
         discord_snowflake_id=new_grad.id,
         discord_name="xyz#123",
-        level=models.Student.LevelPlacement.VARSITY,
+        level=models.LevelPlacement.VARSITY,
     )
 
     await dpytest.message(content="!submit 1234", member=new_grad, attachments=["fake"])
@@ -119,7 +121,10 @@ async def test_submit_updates_student(test_bot):
 
     assert student.discord_snowflake_id == new_grad.id
     assert student.discord_name == f'{new_grad.name}#{new_grad.discriminator}'
-    assert student.level == models.Student.LevelPlacement.GRADUATE
+    assert student.level == models.LevelPlacement.GRADUATE
+
+    subm = await database_sync_to_async(models.Submission.objects.first)()
+    assert subm.level == models.LevelPlacement.GRADUATE
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
@@ -141,7 +146,7 @@ async def test_addtwitter_creates_student(test_bot):
     assert student is not None
     assert student.discord_snowflake_id == sender.id
     assert student.discord_name == f'{sender.name}#{sender.discriminator}'
-    assert student.level == models.Student.LevelPlacement.VARSITY
+    assert student.level == models.LevelPlacement.VARSITY
     assert student.twitter == "my_cool_twitter"
     assert dpytest.verify().message().contains().content("Updated")
 
@@ -152,7 +157,7 @@ async def test_addtwitter_updates_student(test_bot):
     existing_student = await database_sync_to_async(models.Student.objects.create)(
         discord_snowflake_id=sender.id,
         discord_name="xyz#123",
-        level=models.Student.LevelPlacement.VARSITY,
+        level=models.LevelPlacement.VARSITY,
         twitter="lesscooltwitter",
     )
 
@@ -161,7 +166,7 @@ async def test_addtwitter_updates_student(test_bot):
 
     assert student.discord_snowflake_id == sender.id
     assert student.discord_name == f'{sender.name}#{sender.discriminator}'
-    assert student.level == models.Student.LevelPlacement.GRADUATE
+    assert student.level == models.LevelPlacement.GRADUATE
     assert student.twitter == "my_cool_twitter"
     assert dpytest.verify().message().contains().content("Updated")
 
@@ -175,7 +180,7 @@ async def test_addname_creates_student(test_bot):
     assert student is not None
     assert student.discord_snowflake_id == sender.id
     assert student.discord_name == f'{sender.name}#{sender.discriminator}'
-    assert student.level == models.Student.LevelPlacement.JUNIOR_VARSITY
+    assert student.level == models.LevelPlacement.JUNIOR_VARSITY
     assert student.ddr_name == "DDRCOOL"
     assert dpytest.verify().message().contains().content("Updated")
 
@@ -186,7 +191,7 @@ async def test_addname_updates_student(test_bot):
     existing_student = await database_sync_to_async(models.Student.objects.create)(
         discord_snowflake_id=sender.id,
         discord_name="xyz#123",
-        level=models.Student.LevelPlacement.JUNIOR_VARSITY,
+        level=models.LevelPlacement.JUNIOR_VARSITY,
         ddr_name="LESSCOOL",
     )
 
@@ -195,7 +200,7 @@ async def test_addname_updates_student(test_bot):
 
     assert student.discord_snowflake_id == sender.id
     assert student.discord_name == f'{sender.name}#{sender.discriminator}'
-    assert student.level == models.Student.LevelPlacement.FRESHMAN
+    assert student.level == models.LevelPlacement.FRESHMAN
     assert student.ddr_name == "DDRCOOL"
     assert dpytest.verify().message().contains().content("Updated")
 

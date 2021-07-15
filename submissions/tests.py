@@ -25,6 +25,7 @@ class StudentTests(TestCase):
         self.student = models.Student.objects.create(
             discord_snowflake_id=99999,
             discord_name='discord#1234',
+            level=models.LevelPlacement.FRESHMAN,
         )
 
     def test_save_score_saves_score(self):
@@ -38,6 +39,7 @@ class StudentTests(TestCase):
         submission = self.student.submission_set.first()
         self.assertEqual(submission.score, 123)
         self.assertEqual(submission.pic_url, 'url')
+        self.assertEqual(submission.level, self.student.level)
 
     def test_save_score_returns_upscore(self):
         """
@@ -91,7 +93,7 @@ class ModelHelperTests(TestCase):
         student = models.put_student(
             99999,
             discord_name='discord#1234',
-            level=models.Student.LevelPlacement.FRESHMAN,
+            level=models.LevelPlacement.FRESHMAN,
         )
 
         self.assertEqual(models.Student.objects.count(), 1)
@@ -99,7 +101,7 @@ class ModelHelperTests(TestCase):
 
         self.assertEqual(student.discord_snowflake_id, 99999)
         self.assertEqual(student.discord_name, 'discord#1234')
-        self.assertEqual(student.level, models.Student.LevelPlacement.FRESHMAN)
+        self.assertEqual(student.level, models.LevelPlacement.FRESHMAN)
 
     def test_put_student_uses_existing_student(self):
         """
@@ -112,14 +114,14 @@ class ModelHelperTests(TestCase):
             discord_name='discord#1234',
             ddr_name='DDR',
             twitter='abcddd',
-            level=models.Student.LevelPlacement.VARSITY,
+            level=models.LevelPlacement.VARSITY,
         )
         self.assertEqual(models.Student.objects.count(), 1)
 
         student = models.put_student(
             99999,
             discord_name='newname#1234',
-            level=models.Student.LevelPlacement.GRADUATE,
+            level=models.LevelPlacement.GRADUATE,
             twitter='wow',
         )
         self.assertEqual(models.Student.objects.count(), 1)
@@ -127,7 +129,7 @@ class ModelHelperTests(TestCase):
 
         self.assertEqual(student.discord_snowflake_id, 99999)
         self.assertEqual(student.discord_name, 'newname#1234')
-        self.assertEqual(student.level, models.Student.LevelPlacement.GRADUATE)
+        self.assertEqual(student.level, models.LevelPlacement.GRADUATE)
         self.assertEqual(student.ddr_name, 'DDR')
         self.assertEqual(student.twitter, 'wow')
 

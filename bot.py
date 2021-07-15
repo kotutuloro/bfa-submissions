@@ -14,10 +14,8 @@ from submissions.models import (
     close_submissions,
     reopen_submissions,
     is_latest_week_open,
-    Student,
+    LevelPlacement as DIVISIONS,
 )
-
-DIVISIONS = Student.LevelPlacement
 
 description = 'A bot to help with weekly score submissions'
 bot = commands.Bot(command_prefix='!', description=description)
