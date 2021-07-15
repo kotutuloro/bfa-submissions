@@ -222,6 +222,6 @@ async def generic_on_error(ctx, error):
 
 if __name__ == '__main__':
     # ensure necessary env vars are set
-    os.environ['SUBMISSION_CHANNEL_ID']
+    int(os.environ['SUBMISSION_CHANNEL_ID'])
     token = os.environ['DISCORD_BOT_TOKEN']
     bot.run(token)
