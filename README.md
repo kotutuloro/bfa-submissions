@@ -151,4 +151,4 @@ refactoring / legibility
 - [ ] use discord Cogs to group commands by role requirements
 - [ ] better logging
   - use logging instead of print?
-- [ ] log before each command: https://discordpy.readthedocs.io/en/stable/ext/commands/api.html#discord.ext.commands.Bot.before_invoke
+- [x] log before each command: https://discordpy.readthedocs.io/en/stable/ext/commands/api.html#discord.ext.commands.Bot.before_invoke

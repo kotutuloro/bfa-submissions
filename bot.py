@@ -39,6 +39,11 @@ async def correct_channel(ctx):
 
     return ctx.channel.id == int(os.getenv('SUBMISSION_CHANNEL_ID'))
 
+@bot.before_invoke
+async def print_command(ctx):
+    print(f'received {ctx.invoked_with} cmd: "{ctx.message.clean_content}" {ctx.message}')
+
+
 async def are_submissions_open(ctx):
     """Checks that submissions are open before proceeding."""
 
@@ -57,7 +62,6 @@ async def submit(ctx, score: int):
     <score> -- Your ex or money score (depending on the challenge) [digits only, no commas]
     """
 
-    print(f'received cmd: {ctx.message}')
     pic_url = validate_attachment(ctx.message)
     div = get_division(ctx.author.roles)
     upscore = await async_save_score(ctx.author.id, str(ctx.author), div, score, pic_url)
@@ -110,7 +114,7 @@ async def addtwitter(ctx, twitter):
         level=div,
         twitter=twitter,
     )
-    await ctx.send(f"Updated {ctx.author.mention}'s' profile!")
+    await ctx.send(f"Updated {ctx.author.mention}'s profile!")
 
 @bot.command()
 async def addname(ctx, ddr_name):
@@ -126,14 +130,14 @@ async def addname(ctx, ddr_name):
         level=div,
         ddr_name=ddr_name,
     )
-    await ctx.send(f"Updated {ctx.author.mention}'s' profile!")
+    await ctx.send(f"Updated {ctx.author.mention}'s profile!")
 
 @addtwitter.error
 @addname.error
 async def invalid_update(ctx, error):
     if isinstance(error, commands.UserInputError):
         await ctx.send(f'Incorrect command usage: {error}')
-        await ctx.send_help(submit)
+        await ctx.send_help(ctx.command)
     else:
         await generic_on_error(ctx, error)
 
