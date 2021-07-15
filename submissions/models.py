@@ -49,7 +49,7 @@ class Student(models.Model):
         """
 
         highest_subm = self.top_score(Challenge.latest_week())
-        new_subm = self.submission_set.create(score=score, pic_url=pic_url)
+        new_subm = self.submission_set.create(score=score, pic_url=pic_url, level=self.level)
 
         if highest_subm is not None:
             return new_subm.score - highest_subm.score

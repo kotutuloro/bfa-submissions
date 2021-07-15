@@ -65,11 +65,12 @@ async def test_bot_ignores_other_channels(test_bot):
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 async def test_submit_creates_submission(test_bot):
-    sender = test_bot.guilds[0].members[0]
+    sender = await make_role_member(test_bot, "Freshman")
 
     await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1')
     student = await database_sync_to_async(models.Student.objects.create)(
         discord_snowflake_id=sender.id,
+        level=models.LevelPlacement.FRESHMAN,
     )
 
     await dpytest.message(content="!submit 1234", member=sender, attachments=["fake"])
@@ -78,6 +79,7 @@ async def test_submit_creates_submission(test_bot):
     assert subm.score == 1234
     assert subm.challenge_id == 1
     assert subm.student_id == student.id
+    assert subm.level == student.level
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
@@ -120,6 +122,9 @@ async def test_submit_updates_student(test_bot):
     assert student.discord_snowflake_id == new_grad.id
     assert student.discord_name == f'{new_grad.name}#{new_grad.discriminator}'
     assert student.level == models.LevelPlacement.GRADUATE
+
+    subm = await database_sync_to_async(models.Submission.objects.first)()
+    assert subm.level == models.LevelPlacement.GRADUATE
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio

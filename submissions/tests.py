@@ -25,6 +25,7 @@ class StudentTests(TestCase):
         self.student = models.Student.objects.create(
             discord_snowflake_id=99999,
             discord_name='discord#1234',
+            level=models.LevelPlacement.FRESHMAN,
         )
 
     def test_save_score_saves_score(self):
@@ -38,6 +39,7 @@ class StudentTests(TestCase):
         submission = self.student.submission_set.first()
         self.assertEqual(submission.score, 123)
         self.assertEqual(submission.pic_url, 'url')
+        self.assertEqual(submission.level, self.student.level)
 
     def test_save_score_returns_upscore(self):
         """
