@@ -24,20 +24,22 @@ A discord bot that tracks submissions for Black Flag Academy's weekly challenges
 
 ## Deployment/Management
 
-This app is hosted on heroku at https://bfa-submissions.herokuapp.com/.
+This admin app is hosted on heroku at https://bfa-submissions.herokuapp.com/.
+The bot is a separate app on heroku name `bfa-submissions-bot`.
 Changes merged to the main branch are automatically deployed.
 
 ### Configs
 
-These can all be set via the Heroku settings dashboard for this app or using the `heroku config:set` cli command.
+These can all be set via the Heroku settings dashboard for *both* apps or using the `heroku config:set` cli command.
 
 - `SECRET_KEY`: Randomly generated Django secret key
 - `DISCORD_BOT_TOKEN`: Token for the Discord bot (for instructions on creating one, see the [discord.py docs](https://discordpy.readthedocs.io/en/stable/discord.html)
 - `SUBMISSION_CHANNEL_ID`: Discord channel ID for the submissions channel
+- `PROCFILE`: These apps use the [Heroku Multi Procfile buildpack](https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-multi-procfile)
 
 ### Creating an admin user
 
-From the app's heroku dashboard:
+From either app's heroku dashboard:
 - Click "More" >> "Run console"
 - Enter `python manage.py createsuperuser`
 - From there you will be prompted to enter a username, email, and password.
