@@ -90,6 +90,11 @@ Instructions to run this from your local computer.
 - Create and invite a bot account to your server
     - Follow these instructions: https://discordpy.readthedocs.io/en/stable/discord.html
     - Replace `faketoken` in secrets.sh with your bot's token
+    - The bot will need the following permissions when you invite it to your Discord:
+        - View channels
+        - Send messages
+        - Read message history
+        - Add reactions
 
 - Get the ID for the specific channel you want the bot to work in
     - Right-click the channel name and select "Copy ID"
@@ -152,3 +157,4 @@ refactoring / legibility
 - [ ] better logging
   - use logging instead of print?
 - [x] log before each command: https://discordpy.readthedocs.io/en/stable/ext/commands/api.html#discord.ext.commands.Bot.before_invoke
+- [ ] slash commands?? https://discord-py-slash-command.readthedocs.io/en/latest/
