@@ -2,15 +2,14 @@ from django.db import models
 from django.utils import timezone
 from channels.db import database_sync_to_async
 
+class LevelPlacement(models.TextChoices):
+    JUNIOR_VARSITY = 'JV'
+    FRESHMAN = 'FR'
+    VARSITY = 'VA'
+    GRADUATE = 'GR'
+    UNKNOWN = ''
+
 class Student(models.Model):
-
-    class LevelPlacement(models.TextChoices):
-        JUNIOR_VARSITY = 'JV'
-        FRESHMAN = 'FR'
-        VARSITY = 'VA'
-        GRADUATE = 'GR'
-        UNKNOWN = ''
-
     # primary key: id (auto set by django)
     discord_snowflake_id = models.BigIntegerField(
         unique=True,
