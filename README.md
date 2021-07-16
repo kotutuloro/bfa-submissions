@@ -16,7 +16,7 @@ A discord bot that tracks submissions for Black Flag Academy's weekly challenges
 
 ### Faculty/Admin only
 
-`!newweek [optional week number] <challenge name>` - Start a new weekly challenge and open submissions
+`!newweek <challenge name>` - Start a new weekly challenge
 
 `!close` - Prevent submissions for the current challenge
 

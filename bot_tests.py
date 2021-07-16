@@ -208,20 +208,8 @@ async def test_addname_updates_student(test_bot):
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
-async def test_newweek_creates_given_week(test_bot):
-    admin = await make_role_member(test_bot, "Admin")
-
-    await dpytest.message(content="!newweek 3 newnew", member=admin)
-    assert dpytest.verify().message().contains().content("Week 3: newnew")
-
-    challenge = await database_sync_to_async(models.Challenge.objects.get)(week=3)
-    assert challenge is not None
-    assert challenge.name == "newnew"
-
-@pytest.mark.django_db(transaction=True)
-@pytest.mark.asyncio
 async def test_newweek_creates_next_week(test_bot):
-    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1')
+    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1', is_open=False)
 
     admin = await make_role_member(test_bot, "Admin")
 
@@ -234,22 +222,21 @@ async def test_newweek_creates_next_week(test_bot):
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
-async def test_newweek_reopens_submissions(test_bot):
-    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1')
+async def test_newweek_not_allowed_during_opened_submissions(test_bot):
+    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1', is_open=True)
 
     admin = await make_role_member(test_bot, "Admin")
-    await dpytest.message(content="!newweek anotha one", member=admin)
+    await dpytest.message(content="!newweek nope", member=admin)
+    assert dpytest.verify().message().contains().content("still open")
 
-    challenge = await database_sync_to_async(models.Challenge.objects.get)(week=2)
-    assert challenge.is_open
-
-    # test that submissions go through
-    await dpytest.message(content="!submit 1234", attachments=["fake"])
-    assert await database_sync_to_async(models.Submission.objects.count)() == 1
+    c = await database_sync_to_async(models.Challenge.objects.filter(week=2).count)()
+    assert c == 0
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
 async def test_newweek_restricted_to_admin(test_bot):
+    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1', is_open=False)
+
     with pytest.raises(commands.MissingAnyRole):
         await dpytest.message(content="!newweek 1 newnew")
     assert dpytest.verify().message().contains().content("Sorry").content("only faculty, admins, and TOs")

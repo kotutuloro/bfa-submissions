@@ -140,25 +140,15 @@ def put_student(discord_snowflake_id, **kwargs):
     return student
 
 @database_sync_to_async
-def async_new_week(week, name):
-    return new_week(week, name)
+def async_new_week(name):
+    return new_week(name)
 
-def new_week(week, name):
-    """Creates a new challenge. If week is None, uses latest week + 1.
-
-    Also closes the latest week's submissions.
+def new_week(name):
+    """Creates a new challenge using latest week + 1.
     """
 
-    latest = Challenge.latest_week()
-
-    if latest:
-        Challenge.objects.get(week=latest).close()
-    else:
-        latest = 0
-
-    if week is None:
-        week = latest + 1
-
+    latest = Challenge.latest_week() or 0
+    week = latest + 1
     return Challenge.objects.create(week=week, name=name)
 
 @database_sync_to_async
