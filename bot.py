@@ -60,6 +60,9 @@ async def submit(ctx, score: int):
     <score> -- Your ex or money score (depending on the challenge) [digits only, no commas]
     """
 
+    if score < 0 or score > 1000000:
+        raise commands.BadArgument('score must be between 0 and 1000000')
+
     pic_url = validate_attachment(ctx.message)
     div = get_division(ctx.author.roles)
     upscore = await async_save_score(ctx.author.id, str(ctx.author), div, score, pic_url)

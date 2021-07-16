@@ -92,6 +92,24 @@ async def test_submit_requires_attachment(test_bot):
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.asyncio
+async def test_submit_requires_positive_score(test_bot):
+    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1')
+
+    with pytest.raises(commands.UserInputError):
+        await dpytest.message(content="!submit -1", attachments=["fake"])
+    assert dpytest.verify().message().contains().content("score must be between")
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
+async def test_submit_requires_less_than_mfc(test_bot):
+    await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1')
+
+    with pytest.raises(commands.UserInputError):
+        await dpytest.message(content="!submit 1000001", attachments=["fake"])
+    assert dpytest.verify().message().contains().content("score must be between")
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
 async def test_submit_creates_student(test_bot):
     await database_sync_to_async(models.Challenge.objects.create)(week=1, name='week1')
 
