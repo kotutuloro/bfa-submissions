@@ -160,18 +160,16 @@ def get_division(roles_list):
 
 @bot.command()
 @commands.has_any_role('Admin', 'Faculty', 'TO')
-async def newweek(ctx, week: typing.Optional[int], *, name):
+async def newweek(ctx, *, name):
     """Start a new weekly challenge
 
-    [week] -- **Optional** Week number (defaults to the greatest existing week + 1)
     <name> -- Name of the new weekly challenge
     """
 
-    try:
-        challenge = await async_new_week(week, name)
-    except django.db.utils.IntegrityError:
-        await ctx.send(f'{ctx.author.mention} Week number {week} already exists!')
+    if await is_latest_week_open():
+        await ctx.send(f"You can't make a new week while the current week is still open!")
     else:
+        challenge = await async_new_week(name)
         await ctx.send(f'Week {challenge.week}: {challenge.name} has begun!')
 
 @bot.command()
