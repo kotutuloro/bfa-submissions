@@ -1,4 +1,4 @@
-# BFA Sumbission Bot
+# BFA Submission Bot
 
 **Under development**
 
